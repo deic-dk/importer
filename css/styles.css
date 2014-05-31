@@ -1,0 +1,65 @@
+/**
+* ownCloud - ocDownloader plugin
+*
+* @author Xavier Beurois
+* @copyright 2012 Xavier Beurois www.djazz-lab.net
+* @extended Frederik Orellana, 2013
+* 
+* This library is free software; you can redistribute it and/or
+* modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
+* License as published by the Free Software Foundation; either 
+* version 3 of the License, or any later version.
+* 
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU AFFERO GENERAL PUBLIC LICENSE for more details.
+*  
+* You should have received a copy of the GNU Lesser General Public 
+* License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+* 
+*/
+
+#controls div.titleblock{font-weight:bold;font-size:13px;margin:0 0 0 0;}
+#controls div.titleblock div.titleleft{float:left;margin:10px 0 0 15px;color:#555555;}
+#controls div.titleblock span.subtitle{font-style:italic;color:#BBB;margin-left:12px;}
+#controls div.titleblock div.dlbtn{float:right;margin:2px 5px 0 0;}
+
+#ocdownloader{min-width:1080px;margin:4.2em 0 0 0.6em;}
+#ocdownloader div.clear{clear:both;}
+#ocdownloader div.personalblock.bottomblock{margin-bottom:1em;}
+#ocdownloader div.personalblock{margin:1em 0.7em 0 0;padding:0.5em 1em;position:relative;background: none repeat scroll 0 0 #F8F8F8;border-radius:0.5em 0.5em 0.5em 0.5em;color:#555555;border:1px solid #DDDDDD;}
+#ocdownloader div.personalblock.red{background-color: #FA5858;border:0 none;text-shadow:none;}
+#ocdownloader div#dllist div.elts{margin:10px 0 10px 0;}
+#folder_pop{width:740px;height:34px;}
+#ocdownloader div#dllist div.elts input.url{width:600px;margin:4px 0 0 10px;height:14px;}
+#folder_pop div.elts span.urlc input.url{width:360px;margin:4px 0 0 10px;height:14px;}
+#save_pop div.elts span.urlc input.url{width:260px;margin:4px 10px 0 10px;height:14px;}
+#ocdownloader div#dllist div.elts span.dling{float:right;padding:0.9em 0 0 0.8em;display:inline;position:absolute;width:200px;height:28px;font-size:0.75em;}
+div div.elts span.dling{float:right;padding:0.8em 0 0 0.8em;display:inline;position:absolute;width:200px;height:28px;font-size:0.75em;}
+#ocdownloader div#dllist div.elts span.dling img, div div.elts span.dling img{padding:0 0 0 0;vertical-align:middle;}
+#ocdownloader div#dllist div.elts span.dling img.eltdelete, #folder_pop div.elts span.dling img.eltdelete{cursor:pointer;}
+#ocdownloader div#dllist div.elts span.dling iframe, #folder_pop div.elts span.dling iframe{float:right;width:100%;height:100%;}
+#ocdownloader div#dllist div.elts div.eltleft, div div.elts div.eltleft{float:left;padding:0.5em 0 0 0.4em;}
+#ocdownloader div#dllist div.elts div.eltleft select.chzen-select{min-width:130px;}
+#folder_pop div.elts div.eltleft select.chzen-select{min-width:130px;}
+#ocdownloader div#dllist div.elts div.eltleft span.overwrite, div div.elts div.eltleft span.overwrite{margin:6px 6px 6px 6px; padding: 0 0 18px 7px; vertical-align: middle;}
+#ocdownloader div#dllist div.elts span.urlc, div div.elts span.urlc{padding:0 0;}
+#ocdownloader div#hiddentpl{display:none;}
+#ocdownloader div#divhisto table{width:100%;}
+#ocdownloader div#divhisto table th{font-weight:bold;}
+#ocdownloader div#divhisto table td{border-top:1px solid #DDD;}
+#ocdownloader div#divhisto table td,#ocdownloader div#divhisto table th{text-align:center;}
+#ocdownloader div#divhisto table th.col1, #ocdownloader div#divhisto table td.col1{width:60%;border-right:1px solid #DDD;padding:4px 4px 0 0;}
+#ocdownloader div#divhisto table th.col2, #ocdownloader div#divhisto table td.col2{width:20%;border-right:1px solid #DDD;padding:4px 4px 0 0;}
+#ocdownloader div#divhisto table th.col3, #ocdownloader div#divhisto table td.col3{width:20%;padding:4px 4px 0 0;}
+div#folder_pop{position:relative;display:none;}
+div#save_pop{width:390px;height:34px;}
+div#save_pop{position:relative;display:none;}
+button#clearhistory{height:24px;font-size:10px;font-weight:normal;}
+button.addelt{height:28px;vertical-align:middle;padding: 2px 4px 4px 5px;;margin:0 0 2px 8px;}
+button.eltdelete{height:28px;vertical-align:middle;padding: 2px 4px 4px 5px;margin:0 0 2px 8px;}
+div#chosen_file{display:none;}
+.ocdownloader-delete{cursor:pointer;}
+
+

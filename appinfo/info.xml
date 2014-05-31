@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<info>
+  <id>ocdownloader</id>
+  <name>ocDownloader</name>
+  <description>Allows to download files from the Internet directly to the server.</description>
+  <version>2.2</version>
+  <licence>AGPL</licence>
+  <author>Xavier Beurois</author>
+  <author>Frederik Orellana</author>
+  <require>4.93</require>
+  <shipped>true</shipped>
+  <remote>
+    <ingest>appinfo/remote.php</ingest>
+  </remote>
+  <default_enable/>
+</info>
