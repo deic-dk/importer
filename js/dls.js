@@ -1,5 +1,5 @@
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -22,8 +22,8 @@
 
 var mydialog0;
 var a = 0;
-var ocdownloader_pw = "";
-var ocdownloader_pw_ok = false;
+var downloader_pw = "";
+var downloader_pw_ok = false;
 var max_failed_pw_attemts = 3;
 var pw_attempts = 0;
 var decrypting = false;
@@ -78,7 +78,7 @@ function addDownload(d, newurl, newprov, newoverw){
 function setProvidertitles(e){
 	$(e+' span.urlc').tipsy({gravity:'s',fade:true});
 	$(e+' div select.chzen-select').change(function(){
-		$(e+' span.urlc').attr('title',t('ocdownloader','Type URL, then hit RETURN'));
+		$(e+' span.urlc').attr('title',t('downloader','Type URL, then hit RETURN'));
 	});
 	$(e+' div span.overwrite').tipsy({gravity:'s',fade:true});
 	$(e+' div span.overwrite input').bind('click',function(){
@@ -112,29 +112,29 @@ function getProvider(msg){
 	  });
 	}
 	if(p==0){
-		msg.find('span.dling').html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+t('ocdownloader','Select a provider!'));
+		msg.find('span.dling').html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader','Select a provider!'));
 	}
 	else{
 		if(u.length==0){
-			msg.find('span.dling').html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+t('ocdownloader','Provide a file URL!'));
+			msg.find('span.dling').html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader','Provide a file URL!'));
 		}
 		else{
 			$.ajax({
 				type:'POST',
-				url:OC.linkTo('ocdownloader','ajax/getProvider.php'),
+				url:OC.linkTo('downloader','ajax/getProvider.php'),
 				dataType:'json',
 				data:{p:p},
 				async:false,
 				success:function(s){
 					if(s.e){
-						msg.find('span.dling').html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+t('ocdownloader', 'Provider does not exist!'));
+						msg.find('span.dling').html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader', 'Provider does not exist!'));
 					}
 					else{
-						if(s.a && !ocdownloader_pw_ok){
+						if(s.a && !downloader_pw_ok){
 							decrypting = true;
 							// Get username/password for the provider
 							checkMasterPw();
-							if(!ocdownloader_pw_ok){
+							if(!downloader_pw_ok){
 								folder_prov = '';
 								$("#oc_pw_dialog").dialog('open');
 								return;
@@ -143,7 +143,7 @@ function getProvider(msg){
 						msg.removeClass('new');
 						msg.find('span.dling').html('<iframe></iframe>');
 						// Notice: that the variable overwrite is actually used to indicate "preserve/keep directory structure"... TODO: rename
-						msg.find('span.dling iframe').attr('src',OC.linkTo('ocdownloader','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(msg.find('span.overwrite input').attr("checked")?1:0)+'&o=1'));
+						msg.find('span.dling iframe').attr('src',OC.linkTo('downloader','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(msg.find('span.overwrite input').attr("checked")?1:0)+'&o=1'));
 						msg.find('span.dling iframe').load(function(){
 							n = msg.attr('id').replace('elt_','');
 							n = parseInt(parseInt(n)+1);
@@ -183,14 +183,14 @@ function getProvider(msg){
 function checkMasterPw(){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/checkMasterPw.php'),
+		url:OC.linkTo('downloader','ajax/checkMasterPw.php'),
 		dataType:'json',
 		data:{},
 		async:false,
 		success:function(s){
 			decrypting = false;
 			if(s.pw=='1'){
-				ocdownloader_pw_ok = true;
+				downloader_pw_ok = true;
 			}
 		},
 		error:function(){
@@ -203,7 +203,7 @@ function updateHistory(clear){
 	clear = clear || 0;
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/updateHistory.php'),
+		url:OC.linkTo('downloader','ajax/updateHistory.php'),
 		dataType:'json',
 		data:{clear:clear},
 		async:true,
@@ -219,13 +219,13 @@ function updateHistory(clear){
 function lsDir(url, provider){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/lsDir.php'),
+		url:OC.linkTo('downloader','ajax/lsDir.php'),
 		dataType:'json',
 		data:{url:url, provider:provider},
 		async:false,
 		success:function(urls){
 			if(urls.error){
-				$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+urls.error);
+				$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+urls.error);
 				return false;
 			}
 		  $("#folder_pop .elts span.dling").html('');
@@ -239,7 +239,7 @@ function lsDir(url, provider){
 		  });
 		},
 		error:function(error){
-		  $("folder_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+t('ocdownloader',error));
+		  $("folder_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader',error));
 		}
 	});
 	if($('#elt_1 .urlc input.url').val().trim()!=""){
@@ -275,24 +275,24 @@ function saveList(file_name, urls, overwrite){
 	overwrite = overwrite || false;
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/saveList.php'),
+		url:OC.linkTo('downloader','ajax/saveList.php'),
 		dataType:'json',
 		data:{file_name:file_name, list:urls, overwrite:overwrite},
 		async:false,
 		success:function(data, textStatus, jqXHR){
 			console.log(jqXHR);
 		  if(data==null){
-		  	$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;Nothing returned.');
+		  	$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;Nothing returned.');
 			}
 			else if(data.error){
-				$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+data.error);
+				$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+data.error);
 			}
 			else{
 		  	$("#save_pop .elts span.dling").html('');
 			}
 		},
 		error:function(jqXHR, textStatus, errorThrown){
-		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','warning.png')+'" />&nbsp;'+t('ocdownloader', textStatus));
+		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader', textStatus));
 		}
 	});
 }
@@ -304,7 +304,7 @@ function readListFile(){
   }
   $.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/readList.php'),
+		url:OC.linkTo('downloader','ajax/readList.php'),
 		dataType:'json',
 		data:{file_name:selected_file},
 		async:true,
@@ -338,30 +338,30 @@ function readListFile(){
 function store_master_pw(){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/storeMasterPw.php'),
+		url:OC.linkTo('downloader','ajax/storeMasterPw.php'),
 		dataType:'json',
-		data:{master_pw:ocdownloader_pw},
+		data:{master_pw:downloader_pw},
 		async:false,
 		success:function(s){
 			if(s.error){
 				return false;
 			}
 			else{
-				ocdownloader_pw_ok =  true;
+				downloader_pw_ok =  true;
 			}
 		},
 		error:function(s){
 			alert("Unexpected error!");
-			ocdownloader_pw_ok =  false;
+			downloader_pw_ok =  false;
 		}
 	});
 }
 
 function pw_ok_func(){
-	ocdownloader_pw = $('#ocdownloader_pw').val();
+	downloader_pw = $('#downloader_pw').val();
 	store_master_pw();
-	ocdownloader_pw = "";
-	if(ocdownloader_pw_ok){
+	downloader_pw = "";
+	if(downloader_pw_ok){
 		decrypting = false;
 		if(folder_prov!=''){
 			lsDir($("#folderurl").val(), folder_prov);
@@ -378,7 +378,7 @@ function pw_ok_func(){
 function checkProviderAuth(provider){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/getProvider.php'),
+		url:OC.linkTo('downloader','ajax/getProvider.php'),
 		dataType:'json',
 		data:{p:provider},
 		async:false,
@@ -387,11 +387,11 @@ function checkProviderAuth(provider){
 				return;
 			}
 			else{
-				if(s.a && !ocdownloader_pw_ok){
+				if(s.a && !downloader_pw_ok){
 					decrypting = true;
 					// Get username/password for the provider
 					checkMasterPw();
-					if(!ocdownloader_pw_ok){
+					if(!downloader_pw_ok){
 						$("#oc_pw_dialog").dialog('open');
 					}
 				}
@@ -410,7 +410,7 @@ $(document).ready(function(){
 
 	$("#geturl").button({text:true}).bind('click',function(){
 		var first='';
-		$('.elts.new span.dling').html('<img src="'+OC.imagePath('ocdownloader','loader.gif')+'" />');
+		$('.elts.new span.dling').html('<img src="'+OC.imagePath('downloader','loader.gif')+'" />');
 		getProvider($('.elts.new').first());
 	});
 
@@ -477,7 +477,7 @@ $(document).ready(function(){
 		    }
 		    ++i;
 		 });
-		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','loader.gif')+'" />');
+		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','loader.gif')+'" />');
 		  var myoverw = $('#save_pop .elts span.overwrite input').is(':checked');
 		  saveList(file_name, JSON.stringify(urlList), myoverw);
 		  $('#chosen_file').text(file_name)
@@ -540,7 +540,7 @@ $(document).ready(function(){
 		if(e.which!=13){
 			return;
 		}
-		$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('ocdownloader','loader.gif')+'" />');
+		$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','loader.gif')+'" />');
 		myurl = $("#folderurl").val();
 		var myprov = $("#elt_0 div select").val();
 		if(myprov==0){
@@ -549,17 +549,17 @@ $(document).ready(function(){
 					$(this).text().toLowerCase()==myurl.replace(/https:\/\//, "http://").replace(/^(\w+):\/\/.*$/, "$1").toLowerCase()){
 		    	myprov = $(this).val();
 		    	folder_prov = myprov;
-		    	if(!ocdownloader_pw_ok){
+		    	if(!downloader_pw_ok){
 		    		checkProviderAuth(myprov);
 		    	}
 		   	}
 			});
-			if(ocdownloader_pw_ok || myprov===0){
+			if(downloader_pw_ok || myprov===0){
 				lsDir(myurl, myprov);
 			}
 		}
 		else{
-			if(!ocdownloader_pw_ok){
+			if(!downloader_pw_ok){
 				folder_prov = myprov;
 				checkProviderAuth(myprov);
 			}
@@ -588,14 +588,14 @@ $(document).ready(function(){
 			},
 			"Cancel": function() {
 				pw_attempts = 0;
-				ocdownloader_pw = "";
-				ocdownloader_pw_ok = false;
+				downloader_pw = "";
+				downloader_pw_ok = false;
 				mydialog1.dialog("close");
 			}
 		}
 	});
 
- $("#oc_pw_dialog input#ocdownloader_pw").keypress(function (e) {
+ $("#oc_pw_dialog input#downloader_pw").keypress(function (e) {
  	if(e.which==13){
  		pw_ok_func();
  	}

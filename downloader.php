@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -22,21 +22,21 @@
 * 
 */
 
-OCP\App::checkAppEnabled('ocdownloader');
+OCP\App::checkAppEnabled('downloader');
 OCP\User::checkLoggedIn();
 
-OCP\App::setActiveNavigationEntry('ocdownloader_index');
+OCP\App::setActiveNavigationEntry('downloader_index');
 
-$tmpl = new OCP\Template('ocdownloader', 'downloader.tpl', 'user');
+$tmpl = new OCP\Template('downloader', 'downloader.tpl', 'user');
 
 // Get user downloader settings
 if(!in_array('curl', get_loaded_extensions())){
 	$tmpl->assign('curl_error', TRUE);
 }else{
-	$l = new OC_L10N('ocdownloader');
+	$l = new OC_L10N('downloader');
 	
-	$tmpl->assign('user_prov_set', OC_ocDownloader::getProvidersList());
-	$tmpl->assign('user_history', OC_ocDownloader::getUserHistory($l));
+	$tmpl->assign('user_prov_set', OC_downloader::getProvidersList());
+	$tmpl->assign('user_history', OC_downloader::getUserHistory($l));
 }
 
 $tmpl->printPage();

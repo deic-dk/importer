@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,34 +21,34 @@
 * 
 */
 
-OCP\App::checkAppEnabled('ocdownloader');
+OCP\App::checkAppEnabled('downloader');
 
-OC::$CLASSPATH['OC_ocDownloader'] = 'apps/ocdownloader/lib/ocDownloader.class.php';
+OC::$CLASSPATH['OC_downloader'] = 'apps/downloader/lib/downloader.class.php';
 
-$l = OC_L10N::get('ocdownloader');
+$l = OC_L10N::get('downloader');
 
-if(!OC_ocDownloader::isInitialized()){
-	OC_ocDownloader::initProviders(dirname(__FILE__) . '/providers.xml');
+if(!OC_downloader::isInitialized()){
+	OC_downloader::initProviders(dirname(__FILE__) . '/providers.xml');
 }
 
 OCP\App::register(Array(
 	'order' => 30,
-	'id' => 'ocdownloader',
-	'name' => 'ocDownloader'
+	'id' => 'downloader',
+	'name' => 'downloader'
 ));
 
 OCP\App::addNavigationEntry(Array(
-	'id' => 'ocdownloader_index',
+	'id' => 'downloader_index',
 	'order' => 30,
-	'href' => OCP\Util::linkTo('ocdownloader', 'downloader.php'),
-	'icon' => OCP\Util::imagePath('ocdownloader', 'dl.png'),
+	'href' => OCP\Util::linkTo('downloader', 'downloader.php'),
+	'icon' => OCP\Util::imagePath('downloader', 'dl.png'),
 	'name' => 'DL'
 ));
 
-OCP\App::registerPersonal('ocdownloader', 'personalsettings');
-OCP\App::registerAdmin('ocdownloader', 'settings');
+OCP\App::registerPersonal('downloader', 'personalsettings');
+OCP\App::registerAdmin('downloader', 'settings');
 
-$dl_dir = OC_ocDownloader::getDownloadFolder();
+$dl_dir = OC_downloader::getDownloadFolder();
 
 if(OCP\User::getUser() && strlen($dl_dir) != 0){
 	$fs = OCP\Files::getStorage('files');

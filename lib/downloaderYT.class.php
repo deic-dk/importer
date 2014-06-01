@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -22,9 +22,9 @@
 */
 
 /**
- * This class manages ocDownloader YouTube downloads. 
+ * This class manages downloader YouTube downloads. 
  */
-class OC_ocDownloaderYT {
+class OC_downloaderYT {
 
     private static $youtube_video_url;
     private static $youtube_video_id;
@@ -54,13 +54,13 @@ class OC_ocDownloaderYT {
         );
         self::$flv_url = self::get_flv_url();
         
-        $dl_dir = OC_ocDownloader::getDownloadFolder();
+        $dl_dir = OC_downloader::getDownloadFolder();
 
 		$fs = OCP\Files::getStorage('files');
 		if($fs->file_exists($dl_dir.'/' . $final_flv_filename) && !$overwrite){
 			self::$final_flv_filename = md5(rand()) . '_' . $final_flv_filename;
 		}
-		$dl_dir = OC_ocDownloader::getDownloadFolder();
+		$dl_dir = OC_downloader::getDownloadFolder();
 		self::$fs = $fs->fopen($dl_dir . '/' . self::$final_flv_filename, 'w');
 		
         $save_binary = self::get_curl_binary();
@@ -163,7 +163,7 @@ class OC_ocDownloaderYT {
     private static function get_curl_binary(){
       	$size = self::getRemoteFileSize(self::$flv_url);
 		if($size == 0){
-			OC_ocDownloaderPB::setError($l->t('Filesize is null'));
+			OC_downloaderPB::setError($l->t('Filesize is null'));
 			exit();
 		}
 		$chunkSize = self::getChunkSize($size);
@@ -186,13 +186,13 @@ class OC_ocDownloaderYT {
                 $percent = @round(($received/$size)*100, 2);
             }
 			if($received > $last + $chunkSize){
-				OC_ocDownloaderPB::setProgressBarProgress($percent);
+				OC_downloaderPB::setProgressBarProgress($percent);
 				$last = $received;
 			}
 			usleep(100);
 	    }
-		OC_ocDownloaderPB::setProgressBarProgress(100);
-		OC_ocDownloader::setUserHistory(self::$final_flv_filename, 1);
+		OC_downloaderPB::setProgressBarProgress(100);
+		OC_downloader::setUserHistory(self::$final_flv_filename, 1);
 		
 		fclose(self::$fp);fclose(self::$fs);
     }

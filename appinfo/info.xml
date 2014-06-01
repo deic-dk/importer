@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <info>
-  <id>ocdownloader</id>
-  <name>ocDownloader</name>
+  <id>downloader</id>
+  <name>downloader</name>
   <description>Allows to download files from the Internet directly to the server.</description>
   <version>2.2</version>
   <licence>AGPL</licence>

@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,12 +23,12 @@
 */
 
 /**
- * This class manages ocDownloader FTP downloads. 
+ * This class manages downloader FTP downloads. 
  */
  
-require_once('ocdownloader/lib/ocDownloaderPB.class.php');
+require_once('downloader/lib/downloaderPB.class.php');
 
-class OC_ocDownloaderFTP {
+class OC_downloaderFTP {
 	
 	private $conn;
 	public $pb;
@@ -36,7 +36,7 @@ class OC_ocDownloaderFTP {
 	
 	function __construct($b = false) {
 		$this->batch = $b;
-		$this->pb = new OC_ocDownloaderPB();
+		$this->pb = new OC_downloaderPB();
 	}
    
 	function __destruct() {
@@ -97,7 +97,7 @@ class OC_ocDownloaderFTP {
 	/**
 	 * List directory contents recursively.
 	 * @param $folderurl The URL of the directory whose content will be listed
-	 * @param $user_info credentials array (see ocDownloader.class.php)
+	 * @param $user_info credentials array (see downloader.class.php)
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
@@ -105,7 +105,7 @@ class OC_ocDownloaderFTP {
 		// wget -r ftp://ftp@ftp.funet.fi/pub/mirrors/mirror.cs.wisc.edu/pub/mirrors/ghost/contrib/
 		// Unfortunately this does not work with all servers - notably not ftp://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/data/HG00096/
     //$cmd = "/usr/local/bin/ncftpls -gg ".$user_str." ".$password_str." ".$folderurl." | grep -v '/$' | sed 's|@$||' | sed 's|^|".$folderurl."|'";
-    //OC_Log::write('ocDownloader',"Executing; ".$cmd, OC_Log::WARN);
+    //OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
     //exec($cmd, $out, $ret);
 		// So, we use a custom script
 
@@ -117,8 +117,8 @@ class OC_ocDownloaderFTP {
 		}
 
 		$out = array();
-    $cmd = OC_App::getAppPath('ocdownloader')."/lib/ftpfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
-    OC_Log::write('ocDownloader',"Executing; ".$cmd, OC_Log::WARN);
+    $cmd = OC_App::getAppPath('downloader')."/lib/ftpfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
+    OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
     exec($cmd, $out, $ret);
 		return $out;
 	}
@@ -138,7 +138,7 @@ class OC_ocDownloaderFTP {
 			$user = "";
 			$pass = "";
 			
-			$user_info = OC_ocDownloader::getUserProviderInfo('FTP', $masterpw);
+			$user_info = OC_downloader::getUserProviderInfo('FTP', $masterpw);
 			if(isset($user_info['us_username'])){
 				$user = $user_info['us_username'];
 				$pass = $user_info['us_password'];
@@ -168,11 +168,11 @@ class OC_ocDownloaderFTP {
 			if($size<=0){
 				throw new Exception($l->t('File size is').' '.$size);
 			}
-			OC_Log::write('ocDownloader','Size: '.$size, OC_Log::WARN);
+			OC_Log::write('downloader','Size: '.$size, OC_Log::WARN);
 			
 			$fs = OCP\Files::getStorage('files');
 			
-			$dl_dir = strlen($dir)==0?OC_ocDownloader::getDownloadFolder():( $dir[0]==='/'?$dir:OC_ocDownloader::getDownloadFolder()."/".$dir);
+			$dl_dir = strlen($dir)==0?OC_downloader::getDownloadFolder():( $dir[0]==='/'?$dir:OC_downloader::getDownloadFolder()."/".$dir);
 			
 			$parsed_url = parse_url($url);
 			$rpathinfo = pathinfo($parsed_url['path']);
@@ -184,7 +184,7 @@ class OC_ocDownloaderFTP {
 				foreach($dirs as $dir){
 					$mydir = $mydir . "/" . $dir;
 					if(!$fs->file_exists($mydir)){
-						OC_Log::write('ocDownloader','Creating: '.$mydir, OC_Log::WARN);
+						OC_Log::write('downloader','Creating: '.$mydir, OC_Log::WARN);
 						$fs->mkdir($mydir, 0755, true);
 					}
 				}
@@ -234,7 +234,7 @@ class OC_ocDownloaderFTP {
 			else{
 				if(!$this->batch){
 					$this->pb->setProgressBarProgress(100);
-					OC_ocDownloader::setUserHistory($filename, 1);
+					OC_downloader::setUserHistory($filename, 1);
 				}
 				else{
 				print("Done (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s)\n");

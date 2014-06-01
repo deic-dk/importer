@@ -8,8 +8,8 @@
 OC_Util::checkAdminUser();
 OCP\JSON::callCheck();
 
-OC_Log::write('ocdownloader',"Setting provider: ".$_POST['provider'].":".$_POST['active'],OC_Log::WARN);
+OC_Log::write('downloader',"Setting provider: ".$_POST['provider'].":".$_POST['active'],OC_Log::WARN);
 
-OC_ocDownloader::activateProvider($_POST['provider'], $_POST['active']);
+OC_downloader::activateProvider($_POST['provider'], $_POST['active']);
 
 echo 'true';

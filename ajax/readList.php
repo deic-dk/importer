@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,7 +21,7 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('ocdownloader');
+OCP\JSON::checkAppEnabled('downloader');
 OCP\JSON::checkLoggedIn();
 
 $file_name = $_POST['file_name'];
@@ -34,6 +34,6 @@ if(!($ret=json_decode($fs->file_get_contents($full_name)))){
 	$ret['error'] = "Failed reading from ".$full_name;
 }
 
-OC_Log::write('ocDownloader',"Reading list ".$full_name, OC_Log::WARN);
+OC_Log::write('downloader',"Reading list ".$full_name, OC_Log::WARN);
 
 OCP\JSON::encodedPrint($ret);

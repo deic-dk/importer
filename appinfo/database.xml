@@ -5,7 +5,7 @@
 	 <overwrite>false</overwrite>
 	 <charset>utf8</charset>
 	 <table>
-		<name>*dbprefix*ocdownloader</name>
+		<name>*dbprefix*downloader</name>
 		<declaration>
 			<field>
 				<name>dl_id</name>
@@ -51,7 +51,7 @@
 		</declaration>
 	</table>
 	<table>
-		<name>*dbprefix*ocdownloader_providers</name>
+		<name>*dbprefix*downloader_providers</name>
 		<declaration>
 			<field>
 				<name>pr_id</name>
@@ -94,7 +94,7 @@
 		</declaration>
 	</table>
 	<table>
-		<name>*dbprefix*ocdownloader_users_settings</name>
+		<name>*dbprefix*downloader_users_settings</name>
 		<declaration>
 			<field>
 				<name>us_id</name>

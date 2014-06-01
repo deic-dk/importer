@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,18 +21,18 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('ocdownloader');
+OCP\JSON::checkAppEnabled('downloader');
 OCP\JSON::checkLoggedIn();
 
 $clear = $_POST['clear'];
 $k = Array('e' => TRUE);
-$l = new OC_L10N('ocdownloader');
+$l = new OC_L10N('downloader');
 
 if($clear == '1'){
-	OC_ocDownloader::clearUserHistory();
+	OC_downloader::clearUserHistory();
 	$k['e'] = FALSE;
 }
-else if($k['h'] = OC_ocDownloader::getUserHistory($l)){
+else if($k['h'] = OC_downloader::getUserHistory($l)){
 	$k['e'] = FALSE;
 }
 

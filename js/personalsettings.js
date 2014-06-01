@@ -1,5 +1,5 @@
-var ocdownloader_pw = "";
-var ocdownloader_pw_ok = false;
+var downloader_pw = "";
+var downloader_pw_ok = false;
 var input_field;
 var max_failed_pw_attemts = 3;
 var pw_attempts = 0;
@@ -9,7 +9,7 @@ var mydialog1;
 function decrypt_pw(enc_pw){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/decryptPw.php'),
+		url:OC.linkTo('downloader','ajax/decryptPw.php'),
 		dataType:'json',
 		data:{enc_pw:enc_pw},
 		async:false,
@@ -25,7 +25,7 @@ function decrypt_pw(enc_pw){
 			else{
 				alert(s.error);
 				++pw_attempts;
-				ocdownloader_pw_ok = false;
+				downloader_pw_ok = false;
 				unlock_pw();
 			}
 		}
@@ -35,21 +35,21 @@ function decrypt_pw(enc_pw){
 function store_master_pw(){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('ocdownloader','ajax/storeMasterPw.php'),
+		url:OC.linkTo('downloader','ajax/storeMasterPw.php'),
 		dataType:'json',
-		data:{master_pw:ocdownloader_pw},
+		data:{master_pw:downloader_pw},
 		async:false,
 		success:function(s){
 			if(s.error){
 				return false;
 			}
 			else{
-				ocdownloader_pw_ok =  true;
+				downloader_pw_ok =  true;
 			}
 		},
 		error:function(s){
 			alert("Unexpected error!");
-			ocdownloader_pw_ok =  false;
+			downloader_pw_ok =  false;
 		}
 	});
 }
@@ -60,18 +60,18 @@ function unlock_pw(){
 		return;
 	}
 	if(pw_attempts>max_failed_pw_attemts){
-		$("form#ocdownloader :input").attr("disabled", true);
-		$("form#ocdownloader fieldset.personalblock #ocdownloader_settings_submit").unbind('click');
-		$("form#ocdownloader fieldset.personalblock #ocdownloader_settings_submit").css('cursor', 'default');
-		$('.ocdownloader-delete').unbind('click');
-		$('.ocdownloader-delete').css('cursor', 'default');
+		$("form#downloader :input").attr("disabled", true);
+		$("form#downloader fieldset.personalblock #downloader_settings_submit").unbind('click');
+		$("form#downloader fieldset.personalblock #downloader_settings_submit").css('cursor', 'default');
+		$('.downloader-delete').unbind('click');
+		$('.downloader-delete').css('cursor', 'default');
 		alert("ERROR: could not unlock password.");
 		return;
 	}
 	if(!submitting){
-		input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../apps/ocdownloader/img/loader.gif")');
+		input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../apps/downloader/img/loader.gif")');
 	}
-	if(ocdownloader_pw_ok){
+	if(downloader_pw_ok){
 		var enc_pw = input_field.parent().find(".orig_enc_pw").first().val();
 		decrypt_pw(enc_pw);
 	}
@@ -82,9 +82,9 @@ function unlock_pw(){
 }
 
 function pw_ok_func(){
-	ocdownloader_pw = $('#ocdownloader_pw').val();
+	downloader_pw = $('#downloader_pw').val();
 	store_master_pw();
-	ocdownloader_pw = "";
+	downloader_pw = "";
 	mydialog1.dialog("close");
 	if(submitting){
 		return;
@@ -94,26 +94,26 @@ function pw_ok_func(){
 
 $(document).ready(function(){
 	
-	$('.ocdownloader-delete').bind('click', function(){
-		$('#ocdownloader_pr_un_' + $(this).attr('rel')).val('');
-		$('#ocdownloader_pr_pw_' + $(this).attr('rel')).val('');
+	$('.downloader-delete').bind('click', function(){
+		$('#downloader_pr_un_' + $(this).attr('rel')).val('');
+		$('#downloader_pr_pw_' + $(this).attr('rel')).val('');
 	});
-	$('.ocdownloader-delete').tipsy({gravity:'s',fade:true});
+	$('.downloader-delete').tipsy({gravity:'s',fade:true});
 
-	$("form#ocdownloader fieldset.personalblock div.ocdownloader_pr").each(function(el){
+	$("form#downloader fieldset.personalblock div.downloader_pr").each(function(el){
 		var encVal;
 		$(this).find("input[type='password']").each(function(el){
 			$(this).showPassword();
 			encVal = $(this).val();
 			$(this).on('input', function() {
 				input_field = $(this);
-				if(!ocdownloader_pw_ok || encVal!=''){
+				if(!downloader_pw_ok || encVal!=''){
 					unlock_pw();
 				}
 			});
 			$(this).parent().find("input.personal-show[type='checkbox']").first().bind('click', function() {
 				input_field = $(this).parent().find("input.password[type='text']").first();
-				if(!ocdownloader_pw_ok || encVal!=''){
+				if(!downloader_pw_ok || encVal!=''){
 					unlock_pw();
 				}
 			});
@@ -132,8 +132,8 @@ $(document).ready(function(){
 			},
 			"Cancel": function() {
 				pw_attempts = 0;
-				ocdownloader_pw = "";
-				ocdownloader_pw_ok = false;
+				downloader_pw = "";
+				downloader_pw_ok = false;
 				mydialog1.dialog("close");
 				if(!submitting){
 					input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
@@ -144,29 +144,29 @@ $(document).ready(function(){
 		}
 	});
 	
-	$("#oc_pw_dialog input#ocdownloader_pw").keypress(function (e) {
+	$("#oc_pw_dialog input#downloader_pw").keypress(function (e) {
 		if(e.which==13){
 			pw_ok_func();
 		}
 	});
 
-	$("form#ocdownloader fieldset.personalblock #ocdownloader_settings_submit").bind('click', function(){
+	$("form#downloader fieldset.personalblock #downloader_settings_submit").bind('click', function(){
 		// Get the clear-text password cloned into the password field which is actually submmitted.
 		$("input.personal-show[type='checkbox']").each(function(el){
 			if($(this).is(':checked')){
 				$(this).parent().find("input.password[type='password']").first().val($(this).parent().find("input.password[type='text']").first().val());
 			}
 		});
-		if(ocdownloader_pw_ok){
-			$("form#ocdownloader").submit();
+		if(downloader_pw_ok){
+			$("form#downloader").submit();
 		}
 		else{
 			submitting = true;
 			$("#oc_pw_dialog").dialog('open');
 			$("span.ui-button-text:contains('OK')").css("background-color", "#E6E6E6");
 			$("#oc_pw_dialog").on( "dialogclose", function( event, ui ) {
-				if(ocdownloader_pw_ok){
-					$("form#ocdownloader").submit();
+				if(downloader_pw_ok){
+					$("form#downloader").submit();
 				}
 			});
 		}

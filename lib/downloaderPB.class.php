@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -24,9 +24,9 @@
 */
 
 /**
- * This class manages ocDownloader progress bar. 
+ * This class manages downloader progress bar. 
  */
-class OC_ocDownloaderPB {
+class OC_downloaderPB {
 	
 	private  $percentDone = 0;
 	private  $pbid;
@@ -85,7 +85,7 @@ class OC_ocDownloaderPB {
 	 * @param $error The error to display
 	 */
 	public function setError($error){
-		print('<script type="text/javascript">document.getElementById("'.$this->pbid.'").removeChild(document.getElementById("pb_bar"));document.getElementById("'.$this->textid.'").innerHTML = "<img src=\"/apps/ocdownloader/img/warning.png\" style=\"vertical-align:middle;margin-right:5px;\" />'.htmlspecialchars($error).'";</script>'."\n");
+		print('<script type="text/javascript">document.getElementById("'.$this->pbid.'").removeChild(document.getElementById("pb_bar"));document.getElementById("'.$this->textid.'").innerHTML = "<img src=\"/apps/downloader/img/warning.png\" style=\"vertical-align:middle;margin-right:5px;\" />'.htmlspecialchars($error).'";</script>'."\n");
 		self::flush();
 	}
 

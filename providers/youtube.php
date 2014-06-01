@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,14 +23,14 @@
 * 
 */
 
-require_once(OC_App::getAppPath('ocdownloader')."/lib/ocDownloader.class.php");
-require_once(OC_App::getAppPath('ocdownloader')."/lib/ocDownloaderYT.class.php");
-require_once(OC_App::getAppPath('ocdownloader')."/lib/ocDownloaderPB.class.php");
+require_once(OC_App::getAppPath('downloader')."/lib/downloader.class.php");
+require_once(OC_App::getAppPath('downloader')."/lib/downloaderYT.class.php");
+require_once(OC_App::getAppPath('downloader')."/lib/downloaderPB.class.php");
 
-OCP\JSON::checkAppEnabled('ocdownloader');
+OCP\JSON::checkAppEnabled('downloader');
 OCP\JSON::checkLoggedIn();
 
-$l = new OC_L10N('ocdownloader');
+$l = new OC_L10N('downloader');
 
 set_time_limit(0);
 ini_alter("memory_limit", "1024M");
@@ -49,11 +49,11 @@ error_reporting(6135);
 	</head>
 	<body>
 		<?php
-		OC_ocDownloaderPB::init();
+		OC_downloaderPB::init();
 		echo '<div style="width:99%;">';
-		OC_ocDownloaderPB::render();
+		OC_downloaderPB::render();
 		echo '</div>';
-		OC_ocDownloaderPB::setText($l->t('Preparing download ...'));
+		OC_downloaderPB::setText($l->t('Preparing download ...'));
 		
 		$pr = urldecode(trim($_GET['p']));
 		$url = urldecode(trim($_GET['u']));
@@ -66,13 +66,13 @@ error_reporting(6135);
 
 		$purl = parse_url($url);
 		if(!isset($purl['query'])){
-			OC_ocDownloaderPB::setError($l->t('Provide a good URL !'));
+			OC_downloaderPB::setError($l->t('Provide a good URL !'));
 		}else{
 			if(strcmp(substr($purl['query'],0,2),'v=') != 0){
-				OC_ocDownloaderPB::setError($l->t('Provide a good URL !'));
+				OC_downloaderPB::setError($l->t('Provide a good URL !'));
 			}else{
 				$filename = substr($purl['query'],2) . '.flv';
-				OC_ocDownloaderYT::init($url, $filename, 0, $ow, $kd);
+				OC_downloaderYT::init($url, $filename, 0, $ow, $kd);
 			}
 		}
 		?>

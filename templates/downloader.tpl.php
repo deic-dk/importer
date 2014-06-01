@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,17 +21,17 @@
 * 
 */
 
-OCP\Util::addStyle('ocdownloader', 'styles');
+OCP\Util::addStyle('downloader', 'styles');
 //OCP\Util::addScript('3rdparty','chosen/chosen.jquery.min');
 OCP\Util::addStyle('3rdparty','chosen');
 
-OCP\Util::addScript('ocdownloader', 'dls');
+OCP\Util::addScript('downloader', 'dls');
 
 ?>
 
 <div id="controls">
 	<div class="titleblock">
-		<div class="titleleft">Download<span class="subtitle"><?php print($l->t('from external URLs to')." <a href='/index.php/apps/files?dir=".OC_ocDownloader::getDownloadFolder()."'>".OC_ocDownloader::getDownloadFolder()."</a>") ?></span></div>
+		<div class="titleleft">Download<span class="subtitle"><?php print($l->t('from external URLs to')." <a href='/index.php/apps/files?dir=".OC_downloader::getDownloadFolder()."'>".OC_downloader::getDownloadFolder()."</a>") ?></span></div>
 		<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
 		  <div class="dlbtn">
 		    <button id="clearList"><?php print($l->t('Clear list')); ?></button>
@@ -46,7 +46,7 @@ OCP\Util::addScript('ocdownloader', 'dls');
 	</div>
 </div>
 <div id='gallery' class="hascontrols"></div>
-<div id="ocdownloader">
+<div id="downloader">
 
 <div id="folder_pop" class="personalblock">
 	<div id="elt_0" class="elts folder">
@@ -152,5 +152,5 @@ OCP\Util::addScript('ocdownloader', 'dls');
 </div>
 <br />
 <div id="oc_pw_dialog">
-<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="ocdownloader_pw" />
+<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="downloader_pw" />
 </div>

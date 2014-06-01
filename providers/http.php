@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,14 +23,14 @@
 * 
 */
 
-require_once('ocdownloader/lib/ocDownloader.class.php');
-require_once('ocdownloader/lib/ocDownloaderHTTP.class.php');
-require_once('ocdownloader/lib/ocDownloaderPB.class.php');
+require_once('downloader/lib/downloader.class.php');
+require_once('downloader/lib/downloaderHTTP.class.php');
+require_once('downloader/lib/downloaderPB.class.php');
 
-OCP\JSON::checkAppEnabled('ocdownloader');
+OCP\JSON::checkAppEnabled('downloader');
 OCP\JSON::checkLoggedIn();
 
-$l = new OC_L10N('ocdownloader');
+$l = new OC_L10N('downloader');
 
 set_time_limit(0);
 ini_alter("memory_limit", "1024M");
@@ -49,7 +49,7 @@ error_reporting(6135);
 	</head>
 	<body>
 		<?php
-		$dl = new OC_ocDownloaderHTTP();
+		$dl = new OC_downloaderHTTP();
 		echo '<div style="width:99%;">';
 		$dl->pb->render();
 		echo '</div>';

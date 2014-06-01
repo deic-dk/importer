@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,12 +23,12 @@
 */
 
 /**
- * This class manages ocDownloader with the database. 
+ * This class manages downloader with the database. 
  */
-class OC_ocDownloader {
+class OC_downloader {
 
-	private static $saltName = 'ocDownloaderSalt';
-	private static $cookieName = 'ocDownloaderPw';
+	private static $saltName = 'downloaderSalt';
+	private static $cookieName = 'downloaderPw';
 	private static $expire = 0;//time()+60*60*24*30;
 	//private static $expired = time()-3600;
 	private static $path = '/';
@@ -41,11 +41,11 @@ class OC_ocDownloader {
 	 */
 	public static function getProvidersList($active = 1){
 		if($active===-1){
-		  $query = OCP\DB::prepare("SELECT pr_id, pr_name, pr_active FROM *PREFIX*ocdownloader_providers");
+		  $query = OCP\DB::prepare("SELECT pr_id, pr_name, pr_active FROM *PREFIX*downloader_providers");
 		  $result = $query->execute(Array())->fetchAll();
 		}
 		else{
-		  $query = OCP\DB::prepare("SELECT pr_id, pr_name FROM *PREFIX*ocdownloader_providers WHERE pr_active = ?");
+		  $query = OCP\DB::prepare("SELECT pr_id, pr_name FROM *PREFIX*downloader_providers WHERE pr_active = ?");
 		  $result = $query->execute(Array($active))->fetchAll();
 		}
 		if(count($result) > 0){
@@ -60,7 +60,7 @@ class OC_ocDownloader {
 	 * @return Array
 	 */
 	public static function getProvider($pr_id){
-		$query = OCP\DB::prepare("SELECT pr_id, pr_name, pr_auth FROM *PREFIX*ocdownloader_providers WHERE pr_id = ?");
+		$query = OCP\DB::prepare("SELECT pr_id, pr_name, pr_auth FROM *PREFIX*downloader_providers WHERE pr_id = ?");
 		$result = $query->execute(Array($pr_id))->fetchRow();
 		if($result){
 			return $result;
@@ -73,13 +73,13 @@ class OC_ocDownloader {
 	 * @param $name Name of the provider
 	 */
 	public static function addProvider($name, $auth){
-		$query = OCP\DB::prepare("SELECT pr_id FROM *PREFIX*ocdownloader_providers WHERE pr_name = ?");
+		$query = OCP\DB::prepare("SELECT pr_id FROM *PREFIX*downloader_providers WHERE pr_name = ?");
 		$result = $query->execute(Array($name))->fetchRow();
 		if(!$result){
-			$query = OCP\DB::prepare("INSERT INTO *PREFIX*ocdownloader_providers (pr_name,pr_auth) VALUES (?,?)");
+			$query = OCP\DB::prepare("INSERT INTO *PREFIX*downloader_providers (pr_name,pr_auth) VALUES (?,?)");
 			$query->execute(Array($name,$auth));
 		}else{
-			$query = OCP\DB::prepare("UPDATE *PREFIX*ocdownloader_providers SET pr_name = ?,pr_auth = ? WHERE pr_id = ?");
+			$query = OCP\DB::prepare("UPDATE *PREFIX*downloader_providers SET pr_name = ?,pr_auth = ? WHERE pr_id = ?");
 			$query->execute(Array($name,$auth,$result['pr_id']));
 		}
 	}
@@ -90,10 +90,10 @@ class OC_ocDownloader {
 	 * @param $active 1 for active, 0 for inactive
 	 */
 	public static function activateProvider($name, $active){
-		$query = OCP\DB::prepare("SELECT pr_id FROM *PREFIX*ocdownloader_providers WHERE pr_name = ?");
+		$query = OCP\DB::prepare("SELECT pr_id FROM *PREFIX*downloader_providers WHERE pr_name = ?");
 		$result = $query->execute(Array($name))->fetchRow();
 		if($result){
-			$query = OCP\DB::prepare("UPDATE *PREFIX*ocdownloader_providers SET pr_active = ? WHERE pr_id = ?");
+			$query = OCP\DB::prepare("UPDATE *PREFIX*downloader_providers SET pr_active = ? WHERE pr_id = ?");
 			$query->execute(Array($active,$result['pr_id']));
 		}
 	}
@@ -110,7 +110,7 @@ class OC_ocDownloader {
 			$pr = self::getProvider($pr_id);
 			$pr_name = $pr['pr_name'];
 		}
-		$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*ocdownloader_users_settings WHERE oc_uid = ? AND pr_fk = ?");
+		$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*downloader_users_settings WHERE oc_uid = ? AND pr_fk = ?");
 		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
 		if($result){
 			$result['us_password'] = self::decryptPw($result['us_password'], $master_pw);
@@ -125,10 +125,10 @@ class OC_ocDownloader {
 	 */
 	public static function getUserProvidersList($auth = 0, $active = 1){
 		if($auth){
-			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_username, u.us_password FROM *PREFIX*ocdownloader_providers p LEFT OUTER JOIN *PREFIX*ocdownloader_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ? OR u.oc_uid IS NULL) WHERE p.pr_auth = ? AND p.pr_active = ?");
+			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_username, u.us_password FROM *PREFIX*downloader_providers p LEFT OUTER JOIN *PREFIX*downloader_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ? OR u.oc_uid IS NULL) WHERE p.pr_auth = ? AND p.pr_active = ?");
 			$result = $query->execute(Array(OCP\User::getUser(), $auth, $active))->fetchAll();
 		}else{
-			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_username, u.us_password FROM *PREFIX*ocdownloader_providers p LEFT OUTER JOIN *PREFIX*ocdownloader_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ? OR u.oc_uid IS NULL) WHERE p.pr_active = ?");
+			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_username, u.us_password FROM *PREFIX*downloader_providers p LEFT OUTER JOIN *PREFIX*downloader_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ? OR u.oc_uid IS NULL) WHERE p.pr_active = ?");
 			$result = $query->execute(Array(OCP\User::getUser(), $active))->fetchAll();
 		}
 		if(count($result) > 0){
@@ -143,7 +143,7 @@ class OC_ocDownloader {
 	 * @return Array
 	 */
 	public static function getDownloadFolder($raw = 0){
-		$query = OCP\DB::prepare("SELECT u.us_download_folder FROM *PREFIX*ocdownloader_users_settings u WHERE u.oc_uid = ?");
+		$query = OCP\DB::prepare("SELECT u.us_download_folder FROM *PREFIX*downloader_users_settings u WHERE u.oc_uid = ?");
 		$result = $query->execute(Array(OCP\User::getUser()))->fetchAll();
 		$folder = '';
 		if(count($result) > 0){
@@ -165,14 +165,14 @@ class OC_ocDownloader {
 		}
 		$pr = self::getProvider($pr_id);
 		$pr_name = $pr['pr_name'];
-		$query = OCP\DB::prepare("SELECT us_id FROM *PREFIX*ocdownloader_users_settings WHERE oc_uid = ? AND pr_fk = ?");
+		$query = OCP\DB::prepare("SELECT us_id FROM *PREFIX*downloader_users_settings WHERE oc_uid = ? AND pr_fk = ?");
 		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
 		if($result){
-			$query = OCP\DB::prepare("UPDATE *PREFIX*ocdownloader_users_settings SET us_username = ?, us_password = ? WHERE oc_uid = ? AND pr_fk = ?");
+			$query = OCP\DB::prepare("UPDATE *PREFIX*downloader_users_settings SET us_username = ?, us_password = ? WHERE oc_uid = ? AND pr_fk = ?");
 			return $query->execute(Array($username, $pw, OCP\User::getUser(), $pr_name));
 		}
 		else{
-			$query = OCP\DB::prepare("INSERT INTO *PREFIX*ocdownloader_users_settings (oc_uid,pr_fk,us_username,us_password) VALUES (?,?,?,?)");
+			$query = OCP\DB::prepare("INSERT INTO *PREFIX*downloader_users_settings (oc_uid,pr_fk,us_username,us_password) VALUES (?,?,?,?)");
 			return $query->execute(Array(OCP\User::getUser(), $pr_name, $username, $pw));
 		}
 	}
@@ -182,15 +182,15 @@ class OC_ocDownloader {
 	  if($downloadFolder != '' && $downloadFolder[0] != '/'){
 	    $downloadFolder = '/' . $downloadFolder;
 	  }
-	  $query = OCP\DB::prepare("SELECT us_download_folder FROM *PREFIX*ocdownloader_users_settings WHERE oc_uid = ?");
+	  $query = OCP\DB::prepare("SELECT us_download_folder FROM *PREFIX*downloader_users_settings WHERE oc_uid = ?");
 	  $result = $query->execute(Array(OCP\User::getUser()))->fetchRow();
 	  if($result){
-	    $query = OCP\DB::prepare("UPDATE *PREFIX*ocdownloader_users_settings SET us_download_folder = ? WHERE oc_uid = ?");
+	    $query = OCP\DB::prepare("UPDATE *PREFIX*downloader_users_settings SET us_download_folder = ? WHERE oc_uid = ?");
 	  }
 	  else{
-	    $query = OCP\DB::prepare("INSERT INTO *PREFIX*ocdownloader_users_settings (us_download_folder,oc_uid) VALUES (?,?)");
+	    $query = OCP\DB::prepare("INSERT INTO *PREFIX*downloader_users_settings (us_download_folder,oc_uid) VALUES (?,?)");
 	  }
-	  OC_Log::write('ocdownloader', "Setting download folder: ".$downloadFolder,OC_Log::WARN);
+	  OC_Log::write('downloader', "Setting download folder: ".$downloadFolder,OC_Log::WARN);
 	  $query->execute(Array($downloadFolder, OCP\User::getUser()));
 	}
 	
@@ -201,10 +201,10 @@ class OC_ocDownloader {
 	public static function deleteUserInfo($pr_id){
 		$pr = self::getProvider($pr_id);
 		$pr_name = $pr['pr_name'];
-		$query = OCP\DB::prepare("SELECT us_id FROM *PREFIX*ocdownloader_users_settings WHERE oc_uid = ? AND pr_fk = ?");
+		$query = OCP\DB::prepare("SELECT us_id FROM *PREFIX*downloader_users_settings WHERE oc_uid = ? AND pr_fk = ?");
 		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchAll();
 		if(count($result) > 0){
-			$query = OCP\DB::prepare("DELETE FROM *PREFIX*ocdownloader_users_settings WHERE us_id = ?");
+			$query = OCP\DB::prepare("DELETE FROM *PREFIX*downloader_users_settings WHERE us_id = ?");
 			foreach($result as $row){
 				$query->execute(Array($row['us_id']));
 			}
@@ -216,7 +216,7 @@ class OC_ocDownloader {
 	 * @return boolean
 	 */
 	public static function isInitialized(){
-		$ini_file = OC_App::getAppPath('ocdownloader')."/.reinitialize";
+		$ini_file = OC_App::getAppPath('downloader')."/.reinitialize";
 		if(file_exists($ini_file)){
 			unlink($ini_file);
 			return false;
@@ -273,7 +273,7 @@ class OC_ocDownloader {
 	 * @return Array if results or FALSE
 	 */
 	public static function getUserHistory($l){
-		$query = OCP\DB::prepare("SELECT * FROM *PREFIX*ocdownloader WHERE oc_uid = ? ORDER BY dl_ts DESC");
+		$query = OCP\DB::prepare("SELECT * FROM *PREFIX*downloader WHERE oc_uid = ? ORDER BY dl_ts DESC");
 		$results = $query->execute(Array(OCP\User::getUser()))->fetchAll();
 		
 		if(count($results) > 0){
@@ -291,7 +291,7 @@ class OC_ocDownloader {
 	 * @param $status The downloaded file status
 	 */
 	public static function setUserHistory($file, $status){
-		$query = OCP\DB::prepare("INSERT INTO *PREFIX*ocdownloader (oc_uid,dl_ts,dl_file,dl_status) VALUES (?,?,?,?)");
+		$query = OCP\DB::prepare("INSERT INTO *PREFIX*downloader (oc_uid,dl_ts,dl_file,dl_status) VALUES (?,?,?,?)");
 		$query->execute(Array(OCP\User::getUser(),time(),$file,$status));
 	}
 	
@@ -299,8 +299,8 @@ class OC_ocDownloader {
 	 * Clear history of user tasks
 	 */
 	public static function clearUserHistory(){
-		OC_Log::write('ocDownloader', "Clearing history", OC_Log::WARN);
-		$query = OCP\DB::prepare("DELETE FROM *PREFIX*ocdownloader WHERE oc_uid = ?");
+		OC_Log::write('downloader', "Clearing history", OC_Log::WARN);
+		$query = OCP\DB::prepare("DELETE FROM *PREFIX*downloader WHERE oc_uid = ?");
 		$query->execute(Array(OCP\User::getUser()));
 	}
 
@@ -318,15 +318,15 @@ class OC_ocDownloader {
 	private static function getSessionPwHash(){
 		if (!isset($_SESSION[self::$saltName])) {
 			$_SESSION[self::$saltName] = md5(uniqid(rand(), true));
-			OC_Log::write('ocdownloader', "Session PW hash not set", OC_Log::WARN);
+			OC_Log::write('downloader', "Session PW hash not set", OC_Log::WARN);
 		}
-		OC_Log::write('ocdownloader', "Session PW hash :".$_SESSION[self::$saltName], OC_Log::WARN);
+		OC_Log::write('downloader', "Session PW hash :".$_SESSION[self::$saltName], OC_Log::WARN);
 		return $_SESSION[self::$saltName];
 	}
 
 	private static function my_encrypt($enc, $salt){
 		$ret = openssl_encrypt($enc, 'aes-128-cbc', $salt);
-		OC_Log::write('ocdownloader', "Encrypted ".$enc." with ".$salt." to ".$ret, OC_Log::WARN);
+		OC_Log::write('downloader', "Encrypted ".$enc." with ".$salt." to ".$ret, OC_Log::WARN);
 		return $ret;
 	}
 	
@@ -335,7 +335,7 @@ class OC_ocDownloader {
 			return "";
 		}
 		$ret = openssl_decrypt($enc, 'aes-128-cbc', $salt);
-		OC_Log::write('ocdownloader', "Decrypted ".$enc." with salt ".$salt." to ".$ret, OC_Log::WARN);
+		OC_Log::write('downloader', "Decrypted ".$enc." with salt ".$salt." to ".$ret, OC_Log::WARN);
 		return $ret;
 	}
 	
@@ -343,7 +343,7 @@ class OC_ocDownloader {
 		$sessionPwHash = self::getSessionPwHash();
 		$encMasterPw = self::my_encrypt($master_pw, $sessionPwHash);
 		$ret = setcookie(self::$cookieName, $encMasterPw, self::$expire, self::$path, self::$domain, false, false);
-		OC_Log::write('ocdownloader', "Stored master password  ".$encMasterPw." in cookie with name ".self::$cookieName, OC_Log::WARN);
+		OC_Log::write('downloader', "Stored master password  ".$encMasterPw." in cookie with name ".self::$cookieName, OC_Log::WARN);
 		return $ret;
 	}
 	
@@ -362,7 +362,7 @@ class OC_ocDownloader {
 	public static function getMasterPw(){
 		$sessionPwHash = self::getSessionPwHash();
 		$encMasterPw = $_COOKIE[self::$cookieName];
-		OC_Log::write('ocdownloader', "Trying to decrypt encrypted master pw ".$encMasterPw, OC_Log::WARN);
+		OC_Log::write('downloader', "Trying to decrypt encrypted master pw ".$encMasterPw, OC_Log::WARN);
 		$masterPw = self::my_decrypt($encMasterPw, $sessionPwHash);
 		return $masterPw;
 	}
@@ -371,7 +371,7 @@ class OC_ocDownloader {
 		$masterPw = $master_pw?$master_pw:self::getMasterPw();
 		$hashedMasterPw = md5($masterPw);
 		$ret = self::my_decrypt($enc_pw, $hashedMasterPw);
-		OC_Log::write('ocdownloader', "Decrypted ".$enc_pw." with ".$masterPw." to ".$ret, OC_Log::WARN);
+		OC_Log::write('downloader', "Decrypted ".$enc_pw." with ".$masterPw." to ".$ret, OC_Log::WARN);
 		if($ret==='' && $enc_pw!==''){
 			return null;
 		}

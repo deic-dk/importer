@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,9 +23,9 @@
 */
 
 /**
- * This class manages ocDownloader HTTP downloads. 
+ * This class manages downloader HTTP downloads. 
  */
-class OC_ocDownloaderHTTP {
+class OC_downloaderHTTP {
 
 	public $pb;
 	protected $batch;
@@ -34,9 +34,9 @@ class OC_ocDownloaderHTTP {
 	
 	function __construct($b = FALSE) {
 		$this->batch = $b;
-		OC_Log::write('ocDownloader',"Batch: ".$this->batch, OC_Log::WARN);
+		OC_Log::write('downloader',"Batch: ".$this->batch, OC_Log::WARN);
 		if(!$this->batch){
-			$this->pb = new OC_ocDownloaderPB();
+			$this->pb = new OC_downloaderPB();
 		}
   }
    
@@ -59,7 +59,7 @@ class OC_ocDownloaderHTTP {
 	/**
 	 * List directory contents recursively.
 	 * @param $folderurl The URL of the directory whose content will be listed
-	 * @param $user_info credentials array (see ocDownloader.class.php)
+	 * @param $user_info credentials array (see downloader.class.php)
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
@@ -79,16 +79,16 @@ class OC_ocDownloaderHTTP {
 		}
 
 		$out = array();
-		$tmpdir = OC_ocDownloader::mktmpdir();
+		$tmpdir = OC_downloader::mktmpdir();
 		# First check if we can crawl using index.html files
 		$cmd = "/usr/local/bin/wget --no-check-certificate ".$user_str1." ".$password_str1." -P $tmpdir -r -l 5 -nH --cut-dirs=5 --no-parent --spider --reject='index.html\*' -e robots=off --server-response '".$folderurl."' 2>&1 | grep -r '^--' | grep -rv '/?' | grep -v '/$' | sed 's|.* http://|http://|' | sed 's|.* https://|https://|' | grep  '^http'";
-		OC_Log::write('ocDownloader',"Executing; ".$cmd, OC_Log::WARN);
+		OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
 		exec($cmd, $out, $ret);
 		shell_exec("rmdir ".$tmpdir);
 		# Now try if webdav is supported
 		if(empty($out)){
-			$cmd = OC_App::getAppPath('ocdownloader')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
-			OC_Log::write('ocDownloader',"Executing; ".$cmd, OC_Log::WARN);
+			$cmd = OC_App::getAppPath('downloader')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
+			OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
 			exec($cmd, $out, $ret);
 		}
 		return $out;
@@ -120,7 +120,7 @@ class OC_ocDownloaderHTTP {
 			
 			$fs = self::getStorage();
 			
-			$dl_dir = strlen($dir)==0?OC_ocDownloader::getDownloadFolder():( $dir[0]==='/'?$dir:OC_ocDownloader::getDownloadFolder()."/".$dir);
+			$dl_dir = strlen($dir)==0?OC_downloader::getDownloadFolder():( $dir[0]==='/'?$dir:OC_downloader::getDownloadFolder()."/".$dir);
 			
 			$parsed_url = parse_url($url);
 			$rpathinfo = pathinfo($parsed_url['path']);
@@ -132,7 +132,7 @@ class OC_ocDownloaderHTTP {
 				foreach($dirs as $dir){
 					$mydir = $mydir . "/" . $dir;
 					if(!$fs->file_exists($mydir)){
-					OC_Log::write('ocDownloader','Creating: '.$mydir, OC_Log::WARN);
+					OC_Log::write('downloader','Creating: '.$mydir, OC_Log::WARN);
 						$fs->mkdir($mydir, 0755, true);
 					}
 				}
@@ -144,7 +144,7 @@ class OC_ocDownloaderHTTP {
 				}
 			}
 
-		  $user_info = OC_ocDownloader::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
+		  $user_info = OC_downloader::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
 
 			$code = 0;
 			if(!self::checkFileAccess($url, $code, $user_info)){
@@ -168,17 +168,17 @@ class OC_ocDownloaderHTTP {
 				}
 				
 				elseif($overwrite==='auto' && $fs->filesize($dl_dir . "/" . $filename)===$size){
-					OC_Log::write('ocDownloader','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
+					OC_Log::write('downloader','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
 					$skip_file = TRUE;
 				}
 				else{
-				  OC_Log::write('ocDownloader','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
+				  OC_Log::write('downloader','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
 				}
 			}
 			
 			$fs = $fs->fopen($dl_dir . "/" . $filename, 'w');
 			
-		  OC_Log::write('ocDownloader','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
+		  OC_Log::write('downloader','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
 			
 			
 			$chunkSize = self::getChunkSize($size);
@@ -244,7 +244,7 @@ class OC_ocDownloaderHTTP {
 			$mbps = $size/$spent_time/(pow(10, 6));
 			if(!$this->batch){
 				$this->pb->setProgressBarProgress(100);
-				OC_ocDownloader::setUserHistory($filename, 1);
+				OC_downloader::setUserHistory($filename, 1);
 			}
 			else{
 				print(($skip_file?"Skipped":"Done")." (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s, chunksize: ".$chunkSize.")\n");
@@ -285,7 +285,7 @@ class OC_ocDownloaderHTTP {
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); 
 		curl_setopt($ch, CURLOPT_TIMEOUT, 120);
 		if($user_info == NULL){
-			$user_info = OC_ocDownloader::getUserProviderInfo('HTTP');
+			$user_info = OC_downloader::getUserProviderInfo('HTTP');
 		}
 		$purl = parse_url($url);
 		if(preg_match('/^(https*:\/\/)([^@]+):([^@]+)@(.+)$/', $url, $m)){
@@ -294,12 +294,12 @@ class OC_ocDownloaderHTTP {
 			$user_info['us_password'] = $m[3];
 		}
 		if(!empty($user_info) && isset($user_info['us_username'])){
-			OC_Log::write('ocDownloader','Using auth: '.$user_info['us_username'].":".$user_info['us_password'], OC_Log::WARN);
+			OC_Log::write('downloader','Using auth: '.$user_info['us_username'].":".$user_info['us_password'], OC_Log::WARN);
 			//curl_setopt($ch, CURLOPT_UNRESTRICTED_AUTH, TRUE);
 			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ; 
 			curl_setopt($ch, CURLOPT_USERPWD, $user_info['us_username'].":".$user_info['us_password']);
 		}
-		OC_Log::write('ocDownloader','Checking: '.$url, OC_Log::WARN);
+		OC_Log::write('downloader','Checking: '.$url, OC_Log::WARN);
 		$res = curl_exec($ch);
 	  curl_close($ch);
 	  return $res;

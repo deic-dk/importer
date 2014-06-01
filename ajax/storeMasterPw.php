@@ -1,16 +1,16 @@
 <?php
 
-OCP\JSON::checkAppEnabled('ocdownloader');
+OCP\JSON::checkAppEnabled('downloader');
 OCP\JSON::checkLoggedIn();
 
 $master_pw = $_POST['master_pw'];
 
-OC_Log::write('ocDownloader',"Storing master password", OC_Log::WARN);
+OC_Log::write('downloader',"Storing master password", OC_Log::WARN);
 
 $ret = array();
 
-if(!OC_ocDownloader::storeMasterPw($master_pw)){
-	OC_Log::write('ocDownloader',"Returning error.", OC_Log::WARN);
+if(!OC_downloader::storeMasterPw($master_pw)){
+	OC_Log::write('downloader',"Returning error.", OC_Log::WARN);
 	$ret['error'] = "ERROR: could not store master password.";
 }
 

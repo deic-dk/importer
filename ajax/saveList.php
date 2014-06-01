@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud - ocDownloader plugin
+* ownCloud downloader app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,7 +21,7 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('ocdownloader');
+OCP\JSON::checkAppEnabled('downloader');
 OCP\JSON::checkLoggedIn();
 
 $file_name = $_POST['file_name'];
@@ -29,7 +29,7 @@ $list = $_POST['list'];
 $overwrite = $_POST['overwrite'];
 
 
-$dl_dir = OC_ocDownloader::getDownloadFolder();
+$dl_dir = OC_downloader::getDownloadFolder();
 $fs = OCP\Files::getStorage('files');
 
 $full_name = $dl_dir."/".$file_name;
@@ -37,7 +37,7 @@ if($fs->file_exists($full_name) && $overwrite!="true"){
 	$full_name = $dl_dir . "/". md5(rand()) . '_' . $file_name;
 }
 
-OC_Log::write('ocDownloader',"Saving list ".$full_name." - overwrite: ".$overwrite.", content: ".$list, OC_Log::WARN);
+OC_Log::write('downloader',"Saving list ".$full_name." - overwrite: ".$overwrite.", content: ".$list, OC_Log::WARN);
 
 if(!$fs->file_put_contents($full_name, $list)){
 	$ret['error'] = "Failed saving to ".$full_name;
