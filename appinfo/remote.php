@@ -40,7 +40,7 @@
 
 require_once('apps/chooser/lib/lib_chooser.php');
 
-//$baseuri = OC_App::getAppWebPath('downloader').'appinfo/remote.php';
+//$baseuri = OC_App::getAppWebPath('importer').'appinfo/remote.php';
 $baseuri = "/remote.php/ingest";
 $path = substr(OCP\Util::getRequestUri(), strlen($baseuri));
 
@@ -57,7 +57,7 @@ $server = new Sabre_DAV_Server($publicDir);
 $user_id = OC_Chooser::checkIP();
 if($user_id){
   require_once 'chooser/lib/ip_auth.php';
-	OC_Log::write('downloader','user_id '.$user_id,OC_Log::WARN);
+	OC_Log::write('importer','user_id '.$user_id,OC_Log::WARN);
 	if($user_id != '' && OC_User::userExists($user_id)){
 		$_SESSION['user_id'] = $user_id;
 		\OC_Util::setupFS();
@@ -83,7 +83,7 @@ $server->addPlugin(new OC_Connector_Sabre_MaintenancePlugin());
 $authBackend->authenticate($server, 'ownCloud');
 $user = $authPlugin->getCurrentUser();
 
-OC_Log::write('downloader',"USER: ".OC_User::getUser()." : ".$user,OC_Log::WARN);
+OC_Log::write('importer',"USER: ".OC_User::getUser()." : ".$user,OC_Log::WARN);
 
 //$server->exec();
 
@@ -104,12 +104,12 @@ $preserve = array_key_exists('preserve', $_POST) ? $_POST['preserve'] : array_ke
 $masterpw = array_key_exists('password', $_POST) ? $_POST['password'] : array_key_exists('password', $_GET)?$_GET['password']:'';
 $verbose = array_key_exists('verbose', $_POST) ? $_POST['verbose'] : array_key_exists('verbose', $_GET)?$_GET['verbose']:FALSE;
 
-require_once('downloader/lib/downloader'.$provider.'.class.php');
+require_once('importer/lib/importer'.$provider.'.class.php');
 
 $parsed_url = parse_url($url);
 $pathinfo = pathinfo($parsed_url['path']);
-$myprovider = 'OC_downloader'.$provider;
-$l = new OC_L10N('downloader');
+$myprovider = 'OC_importer'.$provider;
+$l = new OC_L10N('importer');
 $dl = new $myprovider(TRUE);
 $dl->getFile($url, $dest_dir, $l, $overwrite, $preserve, $masterpw, $verbose);
 

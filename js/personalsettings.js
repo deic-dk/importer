@@ -1,5 +1,5 @@
-var downloader_pw = "";
-var downloader_pw_ok = false;
+var importer_pw = "";
+var importer_pw_ok = false;
 var input_field;
 var max_failed_pw_attemts = 3;
 var pw_attempts = 0;
@@ -9,7 +9,7 @@ var mydialog1;
 function decrypt_pw(enc_pw){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/decryptPw.php'),
+		url:OC.linkTo('importer','ajax/decryptPw.php'),
 		dataType:'json',
 		data:{enc_pw:enc_pw},
 		async:false,
@@ -25,7 +25,7 @@ function decrypt_pw(enc_pw){
 			else{
 				alert(s.error);
 				++pw_attempts;
-				downloader_pw_ok = false;
+				importer_pw_ok = false;
 				unlock_pw();
 			}
 		}
@@ -35,21 +35,21 @@ function decrypt_pw(enc_pw){
 function store_master_pw(){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/storeMasterPw.php'),
+		url:OC.linkTo('importer','ajax/storeMasterPw.php'),
 		dataType:'json',
-		data:{master_pw:downloader_pw},
+		data:{master_pw:importer_pw},
 		async:false,
 		success:function(s){
 			if(s.error){
 				return false;
 			}
 			else{
-				downloader_pw_ok =  true;
+				importer_pw_ok =  true;
 			}
 		},
 		error:function(s){
 			alert("Unexpected error!");
-			downloader_pw_ok =  false;
+			importer_pw_ok =  false;
 		}
 	});
 }
@@ -60,18 +60,18 @@ function unlock_pw(){
 		return;
 	}
 	if(pw_attempts>max_failed_pw_attemts){
-		$("form#downloader :input").attr("disabled", true);
-		$("form#downloader fieldset.personalblock #downloader_settings_submit").unbind('click');
-		$("form#downloader fieldset.personalblock #downloader_settings_submit").css('cursor', 'default');
-		$('.downloader-delete').unbind('click');
-		$('.downloader-delete').css('cursor', 'default');
+		$("form#importer :input").attr("disabled", true);
+		$("form#importer fieldset.personalblock #importer_settings_submit").unbind('click');
+		$("form#importer fieldset.personalblock #importer_settings_submit").css('cursor', 'default');
+		$('.importer-delete').unbind('click');
+		$('.importer-delete').css('cursor', 'default');
 		alert("ERROR: could not unlock password.");
 		return;
 	}
 	if(!submitting){
-		input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../apps/downloader/img/loader.gif")');
+		input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../apps/importer/img/loader.gif")');
 	}
-	if(downloader_pw_ok){
+	if(importer_pw_ok){
 		var enc_pw = input_field.parent().find(".orig_enc_pw").first().val();
 		decrypt_pw(enc_pw);
 	}
@@ -82,9 +82,9 @@ function unlock_pw(){
 }
 
 function pw_ok_func(){
-	downloader_pw = $('#downloader_pw').val();
+	importer_pw = $('#importer_pw').val();
 	store_master_pw();
-	downloader_pw = "";
+	importer_pw = "";
 	mydialog1.dialog("close");
 	if(submitting){
 		return;
@@ -92,28 +92,50 @@ function pw_ok_func(){
 	unlock_pw();
 }
 
+function submit_form(){
+	$.ajax({
+		type:'POST',
+		url:OC.linkTo('importer','ajax/updatePersonalSettings.php'),
+				dataType:'json',
+				data:$('form#importer').serialize(),
+				async:false,
+				success:function(s){
+					if(s.length!=0){
+						$("#importer_msg").html(s);
+					}
+					else{
+						$("#importer_msg").html("Settings saved");
+					}
+				},
+				error:function(s){
+					$("#importer_msg").html("Unexpected error!");
+				}
+	});
+}
+
 $(document).ready(function(){
 	
-	$('.downloader-delete').bind('click', function(){
-		$('#downloader_pr_un_' + $(this).attr('rel')).val('');
-		$('#downloader_pr_pw_' + $(this).attr('rel')).val('');
+	$('.importer-delete').bind('click', function(){
+		$('#importer_pr_un_' + $(this).attr('rel')).val('');
+		$('#importer_pr_pw_' + $(this).attr('rel')).val('');
+		$('input[name="importer_pr_pw_' + $(this).attr('rel')+'-clone"]').val('');
 	});
-	$('.downloader-delete').tipsy({gravity:'s',fade:true});
+	$('.importer-delete').tipsy({gravity:'s',fade:true});
 
-	$("form#downloader fieldset.personalblock div.downloader_pr").each(function(el){
+	$("form#importer fieldset.personalblock div.importer_pr").each(function(el){
 		var encVal;
 		$(this).find("input[type='password']").each(function(el){
 			$(this).showPassword();
 			encVal = $(this).val();
 			$(this).on('input', function() {
 				input_field = $(this);
-				if(!downloader_pw_ok || encVal!=''){
+				if(!importer_pw_ok || encVal!=''){
 					unlock_pw();
 				}
 			});
 			$(this).parent().find("input.personal-show[type='checkbox']").first().bind('click', function() {
 				input_field = $(this).parent().find("input.password[type='text']").first();
-				if(!downloader_pw_ok || encVal!=''){
+				if(!importer_pw_ok || encVal!=''){
 					unlock_pw();
 				}
 			});
@@ -132,8 +154,8 @@ $(document).ready(function(){
 			},
 			"Cancel": function() {
 				pw_attempts = 0;
-				downloader_pw = "";
-				downloader_pw_ok = false;
+				importer_pw = "";
+				importer_pw_ok = false;
 				mydialog1.dialog("close");
 				if(!submitting){
 					input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
@@ -144,32 +166,71 @@ $(document).ready(function(){
 		}
 	});
 	
-	$("#oc_pw_dialog input#downloader_pw").keypress(function (e) {
+	$("#oc_pw_dialog input#importer_pw").keypress(function (e) {
 		if(e.which==13){
 			pw_ok_func();
 		}
 	});
 
-	$("form#downloader fieldset.personalblock #downloader_settings_submit").bind('click', function(){
+	$("form#importer fieldset.personalblock #importer_settings_submit").bind('click', function(){
 		// Get the clear-text password cloned into the password field which is actually submmitted.
 		$("input.personal-show[type='checkbox']").each(function(el){
 			if($(this).is(':checked')){
 				$(this).parent().find("input.password[type='password']").first().val($(this).parent().find("input.password[type='text']").first().val());
 			}
 		});
-		if(downloader_pw_ok){
-			$("form#downloader").submit();
+		var ok = true;
+		$("form#importer fieldset.personalblock div.importer_pr").each(function(el){
+			var encVal;
+			$(this).find("input[type='password']").each(function(el){
+				encVal = $(this).val();
+				if(typeof encVal != 'undefined' && encVal.trim()!=""){
+					ok = false;
+					return;
+				}
+			});
+		});
+		if(ok || importer_pw_ok){
+			submit_form();
 		}
 		else{
 			submitting = true;
 			$("#oc_pw_dialog").dialog('open');
 			$("span.ui-button-text:contains('OK')").css("background-color", "#E6E6E6");
 			$("#oc_pw_dialog").on( "dialogclose", function( event, ui ) {
-				if(downloader_pw_ok){
-					$("form#downloader").submit();
+				if(importer_pw_ok){
+					submit_form();
 				}
 			});
 		}
 	});
+	
+	// Apparently none of this is working. Chrome autofills if one has a remembered password on the login page
+	/*if(navigator.userAgent.toLowerCase().indexOf('chrome') >= 0) {
+		setTimeout(function () {
+			document.getElementById('importer_pr_pw_1').autocomplete = 'off';
+		}, 1);
+	}
+	
+	$(':input').live('focus',function(){
+		$(this).attr('autocomplete', 'off');
+	});
+	
+	$('form#importer').attr('autocomplete', 'off');
+	$('.importer_pr input').attr('autocomplete', 'off');
+	$('.importer_pr input.username, .importer_pr input.password').each(function(el){
+		if($(this).attr('type')=='password' && (typeof $(this).val() == typeof undefined || $(this).val() == false || $(this).val()=='')){
+			//alert($(this).attr('autocomplete'));
+			$(this).attr('autocomplete','off');
+			$(this).attr('type', 'text');
+			$(this).val('');
+			$(this).attr('type', 'password');
+			$(this).val('');
+		}
+	});*/
 
 });
+
+
+
+

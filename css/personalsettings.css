@@ -1,4 +1,4 @@
-.downloader-delete{cursor:pointer; margin: 0; padding: 0 0 3px 6px;vertical-align:middle}
+.importer-delete{cursor:pointer; margin: 0; padding: 0 0 3px 6px;vertical-align:middle}
 .my-dialog .ui-widget-header {background: #556970;}
 .nowrap{white-space: nowrap;}
 /* Show password toggle */
@@ -13,7 +13,13 @@
 }
 .personal-show + label { margin-top:0.94em; margin-left:-3em; }
 
-.downloader_pr input.password[type="password"], .downloader_pr input.password[type="text"]{
+.importer_pr input.password[type="password"], .importer_pr input.password[type="text"]{
   padding: 0.6em 0.5em 0.4em;
   width: 16em;
+}
+.ui-dialog-titlebar.ui-widget-header.ui-corner-all.ui-helper-clearfix {
+	background: #4b610b;
+	border: 1px solid #1d2d44;
+	color: #ffffff;
+	font-weight: bold;
 }

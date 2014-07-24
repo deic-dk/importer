@@ -1,5 +1,5 @@
 function enable(provider, active){
-	$.ajax(OC.linkTo('downloader','ajax/enableProvider.php'), {
+	$.ajax(OC.linkTo('importer','ajax/enableProvider.php'), {
 		 type:'POST',
 		  data:{
 		   provider: provider,
@@ -12,7 +12,7 @@ function enable(provider, active){
 }
 
 $(document).ready(function(){
-	$('.downloader_provider').each(function(){
+	$('.importer_provider').each(function(){
 	  $(this).change(function(){
 	    enable($(this).attr('name'), $(this).is(':checked')?1:0);
 	  });

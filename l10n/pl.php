@@ -1,7 +1,7 @@
 ﻿<?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net

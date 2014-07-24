@@ -1,5 +1,5 @@
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,9 +21,9 @@
 */
 
 var mydialog0;
-var a = 0;
-var downloader_pw = "";
-var downloader_pw_ok = false;
+var elt_num = 0;
+var importer_pw = "";
+var importer_pw_ok = false;
 var max_failed_pw_attemts = 3;
 var pw_attempts = 0;
 var decrypting = false;
@@ -31,62 +31,112 @@ var decrypt_error = false;
 var mydialog1;
 var folder_prov = '';
 
-function addDownload(d, newurl, newprov, newoverw){
+function get_first_elt(){
+	return $('#dllist .elts').first();
+}
+
+function get_first_id(){
+	var first_elt = get_first_elt();
+	return first_elt.attr('id');
+}
+
+function get_first_n(){
+	var first_id = get_first_id();
+	var n_str = first_id.replace('elt_','');
+	return parseInt(n_str);
+}
+
+
+function remove_eltdelete(my_elt){
+	var len = $('#dllist div.elts').length;
+	var b = my_elt.prev();
+	if(my_elt.find('.addelt').length>0){
+		b.find('.dling').before('<button class="addelt" title="Add another download">+</button>');
+		b.find('.addelt').bind('click',function(){
+			addDownload(true);
+			var first_elt = get_first_elt();
+			if($(this).parent().attr('id')==first_elt.attr('id')){
+				first_elt.find('.dling').first().before('<button class="eltdelete" title="Remove this download">-</button>');
+				first_elt.find('button.eltdelete').first().bind('click',function(el){
+					remove_eltdelete($(this).parent());
+				});
+			}
+			if($('#dllist div.elts').length>1){
+				$(this).remove();
+			}
+		});
+	}
+	my_elt.remove();
+	if(len==2){
+		var first_elt = get_first_elt();
+		first_elt.find('.eltdelete').first().remove();
+	}
+}
+
+function addDownload(d, newurl, newprov, newpreserve){
 	newurl = newurl || "";
 	newprov = newprov || "";
-	newoverw = newoverw || "0";
+	newpreserve = newpreserve || "0";
 	//var a=$('#dllist div.elts').size();
-	++a;
-	$('#dllist').append('<div id="elt_'+parseInt(a+1)+'" class="elts new">'+$('#hiddentpl').html()+'</div>');
+	++elt_num;
+	$('#dllist').append('<div id="elt_'+parseInt(elt_num+1)+'" class="elts new">'+$('#hiddentpl').html()+'</div>');
 
-	var myinp = $("#elt_"+parseInt(a+1)+" .urlc input.url");
+	var myinp = $("#elt_"+parseInt(elt_num+1)+" .urlc input.url");
 	if(newurl!="" && (myinp.val()==undefined || myinp.val()=="")){
 	  myinp.val(newurl);
 	}
-	$("#elt_"+parseInt(a+1)+" div select").val(newprov);
-	if(newoverw=="1"){
-		$("#elt_"+parseInt(a+1)+" div span.overwrite input").attr("checked", "checked");
-		$("#elt_"+parseInt(a+1)+" div span.overwrite input").attr("value", "1");
+	$("#elt_"+parseInt(elt_num+1)+" select").val(newprov);
+	
+	if(newpreserve=="1"){
+		$("#elt_"+parseInt(elt_num+1)+" input.slider-check").attr("value", "1");
+		$("#elt_"+parseInt(elt_num+1)+" input.slider-check").attr("checked", "checked");
+		$("#elt_"+parseInt(elt_num+1)+" .slider-frame .slider-button").addClass("on");
+		$("#elt_"+parseInt(elt_num+1)+" .slider-frame .slider-button").text("nested");
 	}
 	
-	$("#elt_"+parseInt(a+1)+" .addelt").bind('click',function(){
+	$("#elt_"+parseInt(elt_num+1)+" .addelt").bind('click',function(){
 		addDownload(true);
+		var first_elt = get_first_elt();
+		var first_id = get_first_id();
+		if($(this).parent().attr('id')==first_id){
+			first_elt.find('.dling').first().before('<button class="eltdelete" title="Remove this download">-</button>');
+			first_elt.find('button.eltdelete').first().bind('click',function(){
+				remove_eltdelete(first_elt);
+			});
+		}
 		$(this).remove();
 	});
-	$('#elt_'+parseInt(a+1)+' div select').chosen();
-	setProvidertitles('#elt_'+parseInt(a+1));
-	var aa = parseInt(a+1);
+	var aa = parseInt(elt_num+1);
+	$('#elt_'+aa+' select').chosen({disable_search_threshold: 10});
+	setProvidertitles('#elt_'+aa);
 	if(d){
 		$('#elt_'+aa+' button.eltdelete').bind('click',function(){
-			var len = $('#dllist div.elts').size();
-			var b = $('#elt_'+aa).prev();
-			if($('#elt_'+aa+' .addelt').length>0 || len==2){
-			  b.find('.dling').before('<button class="addelt">+</button>');
-			  b.find('.addelt').bind('click',function(){
-			    addDownload(true);
-			    $(this).remove();
-			  });
-			}
-		$(this).parent().remove();
+			remove_eltdelete($('#elt_'+aa));
 		});
 	}
 	else{
-		$('#elt_'+parseInt(a+1)+' button.eltdelete').remove();
+		$('#elt_'+aa+' button.eltdelete').remove();
 	}
 }
 
 function setProvidertitles(e){
 	$(e+' span.urlc').tipsy({gravity:'s',fade:true});
-	$(e+' div select.chzen-select').change(function(){
-		$(e+' span.urlc').attr('title',t('downloader','Type URL, then hit RETURN'));
+	$(e+' span.load').tipsy({gravity:'s',fade:true});
+//	$(e+' button.addelt').tipsy({gravity:'s',fade:true});
+//	$(e+' button.eltdelete').tipsy({gravity:'s',fade:true});
+	$(e+' div.chzn-container').tipsy({gravity:'s',fade:true});
+	$(e+' select.chzen-select').change(function(){
+		$(e+' span.urlc').attr('title',t('importer','Type URL'));
 	});
-	$(e+' div span.overwrite').tipsy({gravity:'s',fade:true});
-	$(e+' div span.overwrite input').bind('click',function(){
-		if($(this).val() == '1'){
-			$(this).val('0');
-		}else{
-			$(this).val('1');
-		}
+	$(e+' .slider-frame').tipsy({gravity:'s',fade:true});
+	$(e+' .slider-frame .slider-button').toggle(
+		function(){
+			$(this).addClass('on').html('nested').parent().next('input[type="checkbox"]').attr('checked', 'checked');
+			$(this).parent().next('input[type="checkbox"]').attr('value', '1');
+		},
+		function(){
+			$(this).removeClass('on').html('flat').parent().next('input[type="checkbox"]').removeAttr('checked');
+			$(this).parent().next('input[type="checkbox"]').attr('value', '0');
 	});
 }
 
@@ -99,9 +149,9 @@ function getProvider(msg){
 		alert("decrypting");
 		return;
 	};
-	
-	var p=msg.find('select.chzen-select').val();
-	var u=msg.find('input.url').val();
+
+	var p = msg.find('select.chzen-select').val();
+	var u = msg.find('input.url').val();
 	if(p==0){
 	  msg.find('select.chzen-select option').each(function(el){
 	    if($(this).text().toLowerCase()==u.replace(/^(\w+):\/\/.*$/, "$1").toLowerCase() ||
@@ -112,29 +162,29 @@ function getProvider(msg){
 	  });
 	}
 	if(p==0){
-		msg.find('span.dling').html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader','Select a provider!'));
+		msg.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Select a provider!'));
 	}
 	else{
 		if(u.length==0){
-			msg.find('span.dling').html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader','Provide a file URL!'));
+			msg.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Provide a file URL!'));
 		}
 		else{
 			$.ajax({
 				type:'POST',
-				url:OC.linkTo('downloader','ajax/getProvider.php'),
+				url:OC.linkTo('importer','ajax/getProvider.php'),
 				dataType:'json',
 				data:{p:p},
 				async:false,
 				success:function(s){
 					if(s.e){
-						msg.find('span.dling').html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader', 'Provider does not exist!'));
+						msg.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer', 'Provider does not exist!'));
 					}
 					else{
-						if(s.a && !downloader_pw_ok){
+						if(s.a && !importer_pw_ok){
 							decrypting = true;
 							// Get username/password for the provider
 							checkMasterPw();
-							if(!downloader_pw_ok){
+							if(!importer_pw_ok){
 								folder_prov = '';
 								$("#oc_pw_dialog").dialog('open');
 								return;
@@ -142,24 +192,22 @@ function getProvider(msg){
 						}
 						msg.removeClass('new');
 						msg.find('span.dling').html('<iframe></iframe>');
-						// Notice: that the variable overwrite is actually used to indicate "preserve/keep directory structure"... TODO: rename
-						msg.find('span.dling iframe').attr('src',OC.linkTo('downloader','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(msg.find('span.overwrite input').attr("checked")?1:0)+'&o=1'));
-						msg.find('span.dling iframe').load(function(){
-							n = msg.attr('id').replace('elt_','');
-							n = parseInt(parseInt(n)+1);
-							if($('#elt_'+n).length != 0){
-								getProvider($('#elt_'+n));
+						var iframe = msg.find('iframe');
+						// Do the actual download
+						var iframeUri = OC.linkTo('importer','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(msg.find('input.slider-check').attr("checked")?1:0)+'&o=1');
+						iframe.load(function(){
+							var n_str = msg.attr('id').replace('elt_','');
+							var new_n = parseInt(n_str)+1;
+							var new_n_str = '#elt_'+new_n;
+							if($(new_n_str).length!=0){
+								getProvider($(new_n_str));
 							}
 							else{
 								$(window).unbind('beforeunload');
-								if($('#dllist div.elts.new').size() == 0 && msg.find('span.dling iframe').contents().find(".pb_text").text() == '100.0%' &&
-									 msg.attr('id')!='elt_1'){
-									//addDownload(false);
-								}
 							}
-							if(msg.find('span.dling iframe').contents().find(".pb_text").text() == '100.0%'){
-								//msg.css('display','none');
-								if(msg.attr('id')=='elt_1'){
+							if(iframe[0].contentWindow.getPbPercentDone()==100){
+								var first_id = get_first_id();
+								if(msg.attr('id')==first_id){
 									msg.find('span.urlc input.url').val('');
 									msg.find('span.dling').html('');
 									msg.addClass('new');
@@ -169,10 +217,8 @@ function getProvider(msg){
 								}
 								updateHistory();
 							}
-							else{
-								msg.addClass('new');
-							}
 						});
+						iframe.attr('src', iframeUri);
 					}
 				}
 			});
@@ -181,37 +227,65 @@ function getProvider(msg){
 }
 
 function checkMasterPw(){
+	
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/checkMasterPw.php'),
+		url:OC.linkTo('importer','ajax/getUserProviderInfoRaw.php'),
+				dataType:'json',
+				data:{url:$("#folderurl").val(), provider:folder_prov},
+				async:false,
+				success:function(s){
+					decrypting = false;
+					if(typeof s.us_password === 'undefined' || s.us_password.trim()==''){
+						importer_pw_ok = true;
+					}
+				},
+				error:function(){
+					decrypting = false;
+				}
+	});
+	
+	if(importer_pw_ok){
+		return;
+	}
+	
+	$.ajax({
+		type:'POST',
+		url:OC.linkTo('importer','ajax/checkMasterPw.php'),
 		dataType:'json',
 		data:{},
 		async:false,
 		success:function(s){
 			decrypting = false;
-			if(s.pw=='1'){
-				downloader_pw_ok = true;
+			if(s.us_password=='1'){
+				importer_pw_ok = true;
 			}
 		},
 		error:function(){
 			decrypting = false;
 		}
 	});
+	
 }
 
 function updateHistory(clear){
 	clear = clear || 0;
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/updateHistory.php'),
+		url:OC.linkTo('importer','ajax/updateHistory.php'),
 		dataType:'json',
 		data:{clear:clear},
 		async:true,
 		success:function(s){
 			$('#tbhisto').html('');
-			$.each(s.h, function(k,v){
-				$('#tbhisto').append('<tr><td class="col1">'+v.dl_file+'</td><td class="col2">'+v.dl_ts+'</td><td class="col3">'+v.dl_status+'</td></tr>');
-			});
+			if(!clear){
+				$.each(s.h, function(k,v){
+					$('#tbhisto').append('<tr><td class="col1">'+v.dl_file+'</td><td class="col2">'+v.dl_ts+'</td><td class="col3">'+v.dl_status+'</td></tr>');
+				});
+			}
+		},
+		error:function(){
+			alert("Update history failed");
 		}
 	});
 }
@@ -219,30 +293,30 @@ function updateHistory(clear){
 function lsDir(url, provider){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/lsDir.php'),
+		url:OC.linkTo('importer','ajax/lsDir.php'),
 		dataType:'json',
 		data:{url:url, provider:provider},
 		async:false,
 		success:function(urls){
 			if(urls.error){
-				$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+urls.error);
+				$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+urls.error);
 				return false;
 			}
 		  $("#folder_pop .elts span.dling").html('');
-		  var myoverw = $('#folder_pop .elts span.overwrite input').is(':checked');
+			var mypreserve = $('#folder_pop .elts input.slider-check').is(':checked');
 		  $.each(urls, function(k, v){
-		  	if($('#dllist div.elts').filter(':visible').size()==1 && addFirstDownload(v, provider, myoverw)){
+		  	if($('#dllist div.elts').filter(':visible').size()==1 && addFirstDownload(v, provider, mypreserve)){
 					return true;
 		  	}
 				$('#dllist div button.addelt').remove();
-				addDownload(true, v, provider, myoverw);
+				addDownload(true, v, provider, mypreserve);
 		  });
 		},
 		error:function(error){
-		  $("folder_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader',error));
+		  $("folder_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer',error));
 		}
 	});
-	if($('#elt_1 .urlc input.url').val().trim()!=""){
+	if($('.elts .urlc input.url').length>0 && $('.elts .urlc input.url').first().val().trim()!=""){
 	  if($("#geturl").attr("disabled")=="disabled"){
 	    $("#geturl").removeAttr("disabled");
 	  }
@@ -252,47 +326,54 @@ function lsDir(url, provider){
 	}
 }
 
-function addFirstDownload(v, myprov, myoverw){
+function addFirstDownload(v, myprov, mypreserve){
 	var mysel = $('#dllist div.elts').filter(':visible').first();
 	var myinp = mysel.find('.urlc input.url').first();
 	if(myinp.val()==undefined || myinp.val()==""){
 		  myinp.val(v);
-		  mysel.find('div div.chzn-container').remove();
-		  mysel.find('div select').toggle(true);
-		  mysel.find('div select').removeClass('chzn-done');
-		  mysel.find('div select').val(myprov);
-		  mysel.find('div select').chosen();
-		  mysel.find("span.overwrite input").attr("value", myoverw?"1":"0");
-		  mysel.find("span.overwrite input").attr("checked", myoverw);
+		  mysel.find('div.chzn-container').remove();
+		  mysel.find('select').toggle(true);
+		  mysel.find('select').removeClass('chzn-done');
+		  mysel.find('select').val(myprov);
+			mysel.find('select').chosen({disable_search_threshold: 10});
+		  mysel.find("input.slider-check").attr("value", mypreserve?"1":"0");
+			mysel.find("input.slider-check").attr("checked", mypreserve);
+			var aa = parseInt(elt_num+1);
+			if(mypreserve=="1"){
+				$("#elt_"+aa+" .slider-frame .slider-button").addClass("on");
+				$("#elt_"+aa+" .slider-frame .slider-button").text("nested");
+			}
+			else{
+				$("#elt_"+aa+" .slider-frame .slider-button").removeClass("on");
+				$("#elt_"+aa+" .slider-frame .slider-button").text("flat");
+			}
 			mysel.find('button.eltdelete').remove();
-		  //setProvidertitles('#elt_1');
 		  return true;
 	}
   return false;
 }
 
-function saveList(file_name, urls, overwrite){
-	overwrite = overwrite || false;
+function saveList(file_name, urls){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/saveList.php'),
+		url:OC.linkTo('importer','ajax/saveList.php'),
 		dataType:'json',
-		data:{file_name:file_name, list:urls, overwrite:overwrite},
+		data:{file_name:file_name, list:urls},
 		async:false,
 		success:function(data, textStatus, jqXHR){
 			console.log(jqXHR);
 		  if(data==null){
-		  	$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;Nothing returned.');
+		  	$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;Nothing returned.');
 			}
 			else if(data.error){
-				$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+data.error);
+				$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+data.error);
 			}
 			else{
 		  	$("#save_pop .elts span.dling").html('');
 			}
 		},
 		error:function(jqXHR, textStatus, errorThrown){
-		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','warning.png')+'" />&nbsp;'+t('downloader', textStatus));
+		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer', textStatus));
 		}
 	});
 }
@@ -304,7 +385,7 @@ function readListFile(){
   }
   $.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/readList.php'),
+		url:OC.linkTo('importer','ajax/readList.php'),
 		dataType:'json',
 		data:{file_name:selected_file},
 		async:true,
@@ -317,20 +398,22 @@ function readListFile(){
 					alert(v);
 					return false;
 				}
-				if($('#dllist div.elts').filter(':visible').size()==1 && addFirstDownload(v.url, v.provider, v.overwrite)){
+				if($('#dllist div.elts').filter(':visible').size()==1 && addFirstDownload(v.url, v.provider, v.preserve)){
 					return true;
 				}
 				$('#dllist div button.addelt').remove();
-				addDownload(true, v.url, v.provider, v.overwrite);
+				addDownload(true, v.url, v.provider, v.preserve);
 			});
-			if($('#elt_1 .urlc input.url').val() && $('#elt_1 .urlc input.url').val().trim()!=""){
-			  if($("#geturl").attr("disabled")=="disabled"){
-			    $("#geturl").removeAttr("disabled");
-			  }
-			  if($("#savelist").attr("disabled")=="disabled"){
-			    $("#savelist").removeAttr("disabled");
-			  }	
-			}
+			$('.elts .urlc input.url').each(function(el){
+				if($(this). val().trim()!=""){
+					if($("#geturl").attr("disabled")=="disabled"){
+						$("#geturl").removeAttr("disabled");
+					}
+					if($("#savelist").attr("disabled")=="disabled"){
+						$("#savelist").removeAttr("disabled");
+					}
+				}
+			});
 		}
 	});
 }
@@ -338,30 +421,31 @@ function readListFile(){
 function store_master_pw(){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/storeMasterPw.php'),
+		url:OC.linkTo('importer','ajax/storeMasterPw.php'),
 		dataType:'json',
-		data:{master_pw:downloader_pw},
+		data:{master_pw:importer_pw},
 		async:false,
 		success:function(s){
 			if(s.error){
 				return false;
 			}
 			else{
-				downloader_pw_ok =  true;
+				importer_pw_ok = true;
 			}
 		},
 		error:function(s){
 			alert("Unexpected error!");
-			downloader_pw_ok =  false;
+			importer_pw_ok =  false;
 		}
 	});
 }
 
 function pw_ok_func(){
-	downloader_pw = $('#downloader_pw').val();
+	importer_pw = $('#importer_pw').val();
 	store_master_pw();
-	downloader_pw = "";
-	if(downloader_pw_ok){
+	importer_pw = "";
+	mydialog1.dialog("close");
+	if(importer_pw_ok){
 		decrypting = false;
 		if(folder_prov!=''){
 			lsDir($("#folderurl").val(), folder_prov);
@@ -372,13 +456,12 @@ function pw_ok_func(){
 		decrypt_error = true;
 		alert("ERROR: failed to decrypt master password.");
 	}
-	mydialog1.dialog("close");
 }
 
 function checkProviderAuth(provider){
 	$.ajax({
 		type:'POST',
-		url:OC.linkTo('downloader','ajax/getProvider.php'),
+		url:OC.linkTo('importer','ajax/getProvider.php'),
 		dataType:'json',
 		data:{p:provider},
 		async:false,
@@ -387,11 +470,11 @@ function checkProviderAuth(provider){
 				return;
 			}
 			else{
-				if(s.a && !downloader_pw_ok){
+				if(s.a && !importer_pw_ok){
 					decrypting = true;
 					// Get username/password for the provider
 					checkMasterPw();
-					if(!downloader_pw_ok){
+					if(!importer_pw_ok){
 						$("#oc_pw_dialog").dialog('open');
 					}
 				}
@@ -403,32 +486,67 @@ function checkProviderAuth(provider){
 	});
 }
 
+function loadFolderUrl(){
+	$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','loader.gif')+'" />');
+	myurl = $("#folderurl").val();
+	var myprov = $("#elt_0 select").val();
+	if(myprov==0){
+		$('#elt_0 select.chzen-select option').each(function(el){
+			if($(this).text().toLowerCase()==myurl.replace(/^(\w+):\/\/.*$/, "$1").toLowerCase() ||
+				$(this).text().toLowerCase()==myurl.replace(/https:\/\//, "http://").replace(/^(\w+):\/\/.*$/, "$1").toLowerCase()){
+					myprov = $(this).val();
+					folder_prov = myprov;
+					if(!importer_pw_ok){
+						checkProviderAuth(myprov);
+					}
+				}
+		});
+		if(importer_pw_ok || myprov===0){
+			lsDir(myurl, myprov);
+		}
+	}
+	else{
+		if(!importer_pw_ok){
+			folder_prov = myprov;
+			checkProviderAuth(myprov);
+		}
+		else{
+			lsDir(myurl, myprov);
+		}
+	}
+}
+
 $(document).ready(function(){
 
-	$('#elt_'+$('#dllist div.elts').size()+' div select').chosen();
+	$('#elt_'+$('#dllist div.elts').size()+' select').chosen({disable_search_threshold: 10});
 	setProvidertitles('#elt_'+$('#dllist div.elts').size());
 
 	$("#geturl").button({text:true}).bind('click',function(){
-		var first='';
-		$('.elts.new span.dling').html('<img src="'+OC.imagePath('downloader','loader.gif')+'" />');
-		getProvider($('.elts.new').first());
+		$('.elts.new span.dling').html('<img src="'+OC.imagePath('importer','loader.gif')+'" />');
+		getProvider(get_first_elt());
 	});
 
+	$("#loadFolder").button({text:true}).bind('click',function(){
+		loadFolderUrl();
+	});
+	
 	$("#clearList").button({text:true}).bind('click',function(){
+		var first_elt = $('.elts.new').first();
+		var first_id = first_elt.attr("id");
 		$('.elts.new').each(function(el){
-			if($(this).attr('id') != "elt_1"){
+			if($(this).attr('id')!=first_id){
 				$(this).remove();
 			}
 		});
-		$('.elts.new#elt_1 span.urlc input.url').val('');
-		if($('.elts.new#elt_1 .addelt').length==0){
-			$('.elts.new#elt_1 .dling').before('<button class="addelt">+</button>');
-			$('.elts.new#elt_1 .addelt').bind('click',function(){
+		first_elt.find('input.url').val('');
+		if(first_elt.find('.addelt').length==0){
+			var add_elt = first_elt.find('.dling').first().before('<button class="addelt" title="Add another download">+</button>');
+			add_elt.bind('click',function(){
 				addDownload(true);
 				$(this).remove();
 			});
 		}
-		a = 0;
+		elt_num = 0;
 		$('#dllist div.elts span.dling').html('');
 	});
 	
@@ -449,12 +567,13 @@ $(document).ready(function(){
             at: "right bottom"
 	  });
 	  $("#save_list span.urlc").tipsy({gravity:'s',fade:true});
-	  $("#save_list span.overwrite").tipsy({gravity:'s',fade:true});
-	  $('#save_list span.overwrite input').unbind().click(function(){});
-	  $('#save_list span.overwrite input').bind('click',function(){
+	  $("#save_list .slider-frame").tipsy({gravity:'s',fade:true});
+		$('#save_list input.slider-check').unbind().click(function(){});
+		$('#save_list input.slider-check').bind('click',function(){
 	  	if($(this).val() == '1'){
 	  		$(this).val('0');
-	  	}else{
+	  	}
+	  	else{
 	  		$(this).val('1');
 	  	}
 	  });
@@ -465,24 +584,23 @@ $(document).ready(function(){
 	$("#save_pop .elts .urlc input").keypress(function(e) {
 		var file_name = $("#save_pop .elts .urlc input").val().trim();
 		if(e.which==13 && file_name!=""){
-		  var urlList = {};
-		  var i = 0;
-		  $("#dllist div.elts").filter(':visible').each(function(el){
-		    var urlLine = {};
-		    urlLine['url'] = $(this).find('.urlc input.url').val().trim();
-		    urlLine['overwrite'] = $(this).find('span.overwrite input').is(':checked');
-		    urlLine['provider'] = $(this).find('div select').val().trim();
-		    if(urlLine['url']!=''){
-		      urlList[i] = urlLine;
-		    }
-		    ++i;
-		 });
-		  $("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','loader.gif')+'" />');
-		  var myoverw = $('#save_pop .elts span.overwrite input').is(':checked');
-		  saveList(file_name, JSON.stringify(urlList), myoverw);
-		  $('#chosen_file').text(file_name)
-		}
-	});
+			var urlList = {};
+			var i = 0;
+			$("#dllist div.elts").filter(':visible').each(function(el){
+				var urlLine = {};
+				urlLine['url'] = $(this).find('.urlc input.url').val().trim();
+				urlLine['preserve'] = $(this).find('input.slider-check').is(':checked');
+				urlLine['provider'] = $(this).find('select').val().trim();
+				if(urlLine['url']!=''){
+					urlList[i] = urlLine;
+			}
+			++i;
+		});
+				$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','loader.gif')+'" />');
+				saveList(file_name, JSON.stringify(urlList));
+				$('#chosen_file').text(file_name)
+	}
+});
 
 	mydialog0 = $("#dialog0").dialog({//create dialog, but keep it closed
 	  title: "Choose file",
@@ -527,12 +645,20 @@ $(document).ready(function(){
             my: "right top",
             at: "right bottom"
 	  });
-	  $("#folder_pop div select").chosen();
+		$("#folder_pop select").chosen({disable_search_threshold: 10});
 	  setProvidertitles("#folder_pop");
 	});
 
 	$(".addelt").bind('click',function(){
 		addDownload(true);
+		var first_elt = get_first_elt();
+		var first_id = get_first_id();
+		if($(this).parent().attr('id')==first_id){
+			first_elt.find('.dling').first().before('<button class="eltdelete" title="Remove this download">-</button>');
+			first_elt.find('button.eltdelete').first().bind('click',function(){
+				remove_eltdelete(first_elt);
+			});
+		}
 		$(this).remove();
 	});
 
@@ -540,41 +666,18 @@ $(document).ready(function(){
 		if(e.which!=13){
 			return;
 		}
-		$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('downloader','loader.gif')+'" />');
-		myurl = $("#folderurl").val();
-		var myprov = $("#elt_0 div select").val();
-		if(myprov==0){
-			$('#elt_0 div select.chzen-select option').each(function(el){
-		  	if($(this).text().toLowerCase()==myurl.replace(/^(\w+):\/\/.*$/, "$1").toLowerCase() ||
-					$(this).text().toLowerCase()==myurl.replace(/https:\/\//, "http://").replace(/^(\w+):\/\/.*$/, "$1").toLowerCase()){
-		    	myprov = $(this).val();
-		    	folder_prov = myprov;
-		    	if(!downloader_pw_ok){
-		    		checkProviderAuth(myprov);
-		    	}
-		   	}
-			});
-			if(downloader_pw_ok || myprov===0){
-				lsDir(myurl, myprov);
-			}
-		}
-		else{
-			if(!downloader_pw_ok){
-				folder_prov = myprov;
-				checkProviderAuth(myprov);
-			}
-			else{
-				lsDir(myurl, myprov);
-			}
-		}
+		loadFolderUrl();
 	});
 	
 	$("#geturl").attr("disabled", "disabled");
-	$('#elt_1 .urlc input.url').on('input', function(){
-	  if($("#geturl").attr("disabled")=="disabled"){
-	    $("#geturl").removeAttr("disabled");
-	  }
+	$('.elts.new .urlc input.url').each(function(el){
+		$(this).on('input', function(){
+			if($("#geturl").attr("disabled")=="disabled"){
+				$("#geturl").removeAttr("disabled");
+			}
+		});
 	});
+
 
  mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
 		title: "Enter master password",
@@ -588,17 +691,27 @@ $(document).ready(function(){
 			},
 			"Cancel": function() {
 				pw_attempts = 0;
-				downloader_pw = "";
-				downloader_pw_ok = false;
+				importer_pw = "";
+				importer_pw_ok = false;
 				mydialog1.dialog("close");
 			}
 		}
 	});
 
- $("#oc_pw_dialog input#downloader_pw").keypress(function (e) {
+ $("#oc_pw_dialog input#importer_pw").keypress(function (e) {
  	if(e.which==13){
  		pw_ok_func();
  	}
  });
+ 
+ $('.slider-button').toggle(
+	function(){
+		$(this).addClass('on').html('nested').parent().next('input[type="checkbox"]').attr('checked', 'checked');
+		$(this).parent().next('input[type="checkbox"]').attr('value', '1');
+	},
+	function(){
+	 $(this).removeClass('on').html('flat').parent().next('input[type="checkbox"]').removeAttr('checked');
+	 $(this).parent().next('input[type="checkbox"]').attr('value', '0');
+	});
 
 });

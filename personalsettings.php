@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,25 +21,25 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\User::checkLoggedIn();
 
-OCP\Util::addscript('downloader', 'personalsettings');
+OCP\Util::addscript('importer', 'personalsettings');
 
 $errors = Array();
 
-if(isset($_GET['downloader']) && $_GET['downloader'] == 1){
+if(isset($_GET['importer']) && $_GET['importer'] == 1){
 	foreach($_GET as $key => $value){
 		$value = trim($value);
-		if(strcmp(substr($key, 0, 19), 'downloader_pr_un_') == 0){
+		if(strcmp(substr($key, 0, 15), 'importer_pr_un_') == 0){
 			$pr_id = substr($key, strrpos($key, '_')+1);
 			if(strlen($value) != 0){
 				if(is_numeric($pr_id)){
-					$pw = trim($_GET['downloader_pr_pw_' . $pr_id]);
-					$enc = trim($_GET['downloader_pr_enc_' . $pr_id]);
+					$pw = trim($_GET['importer_pr_pw_' . $pr_id]);
+					$enc = trim($_GET['importer_pr_enc_' . $pr_id]);
 					if($enc=="0" && $pw!=""){
-						OC_Log::write('downloader',"Updating user info ".$pr_id.": ".$pw.", ".$enc,OC_Log::WARN);
-						if(OC_downloader::updateUserInfo($pr_id, $value, $pw)===false){
+						OC_Log::write('importer',"Updating user info ".$pr_id.": ".$pw.", ".$enc,OC_Log::WARN);
+						if(OC_importer::updateUserInfo($pr_id, $value, $pw)===false){
 							$errors[$pr_id] = "ERROR: password NOT updated for ".$value.". " . mysql_error();
 						}
 					}
@@ -47,23 +47,23 @@ if(isset($_GET['downloader']) && $_GET['downloader'] == 1){
 			}
 			else{
 				if(is_numeric($pr_id)){
-					OC_downloader::deleteUserInfo($pr_id);
+					OC_importer::deleteUserInfo($pr_id);
 				}
 			}
 		}
-		if(strcmp(substr($key, 0, 28), 'downloader_download_folder') == 0 && trim($value) != ""){
-			OC_downloader::updateDownloadFolder($value);
+		if(strcmp(substr($key, 0, 24), 'importer_download_folder') == 0 && trim($value) != ""){
+			OC_importer::updateDownloadFolder($value);
 		}
 	}
 }
 
-OC_Log::write('downloader',"Cookie has value ".$_COOKIE['downloaderPw'], OC_Log::WARN);
+OC_Log::write('importer',"Cookie has value ".$_COOKIE['importerPw'], OC_Log::WARN);
 
 $ret = openssl_decrypt('dum', 'aes-128-cbc', 'test');
-OC_Log::write('downloader',"Decryption test: ".$ret, OC_Log::WARN);
+OC_Log::write('importer',"Decryption test: ".$ret, OC_Log::WARN);
 
-$tmpl = new OCP\Template('downloader', 'personalsettings.tpl');
+$tmpl = new OCP\Template('importer', 'personalsettings.tpl');
 $tmpl->assign('errors', $errors);
-$tmpl->assign('pr_list', OC_downloader::getUserProvidersList(1));
-$tmpl->assign('us_download_folder', OC_downloader::getDownloadFolder(1));
+$tmpl->assign('pr_list', OC_importer::getUserProvidersList(1));
+$tmpl->assign('us_download_folder', OC_importer::getDownloadFolder(1));
 return $tmpl->fetchPage();

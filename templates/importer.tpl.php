@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,24 +21,24 @@
 * 
 */
 
-OCP\Util::addStyle('downloader', 'styles');
-//OCP\Util::addScript('3rdparty','chosen/chosen.jquery.min');
+OCP\Util::addStyle('importer', 'styles');
+OCP\Util::addScript('3rdparty','chosen/chosen.jquery.min');
 OCP\Util::addStyle('3rdparty','chosen');
 
-OCP\Util::addScript('downloader', 'dls');
+OCP\Util::addScript('importer', 'dls');
 
 ?>
 
 <div id="controls">
 	<div class="titleblock">
-		<div class="titleleft">Download<span class="subtitle"><?php print($l->t('from external URLs to')." <a href='/index.php/apps/files?dir=".OC_downloader::getDownloadFolder()."'>".OC_downloader::getDownloadFolder()."</a>") ?></span></div>
+		<span class="titleleft">Import data</span><span class="subtitle"><?php print($l->t('from external URLs to')."</span> <a href='/index.php/apps/files?dir=".OC_importer::getDownloadFolder()."'>".OC_importer::getDownloadFolder()."</a>") ?>
 		<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
 		  <div class="dlbtn">
+		    <button id="geturl"><?php print($l->t('Download all files')); ?></button>
 		    <button id="clearList"><?php print($l->t('Clear list')); ?></button>
 		    <button id="savelist"><?php print($l->t('Save list')); ?></button>
 		    <button id="chooselist"><?php print($l->t('Load list from file')); ?></button>
-		    <button id="getfolderurl"><?php print($l->t('Load directory URL')); ?></button>
-		    <button id="geturl"><?php print($l->t('Download')); ?></button>
+		    <button id="getfolderurl"><?php print($l->t('List folder URL')); ?></button>
 		  </div>
 		  <div class='clear'></div>
 		<?php } ?>
@@ -46,21 +46,25 @@ OCP\Util::addScript('downloader', 'dls');
 	</div>
 </div>
 <div id='gallery' class="hascontrols"></div>
-<div id="downloader">
+<div id="importer">
 
 <div id="folder_pop" class="personalblock">
 	<div id="elt_0" class="elts folder">
-		<div class="eltleft">
-			<select class="chzen-select" data-placeholder="<?php print($l->t('Select provider')); ?>">
+			<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
 					<option value="0"></option>
 					<?php foreach($_['user_prov_set'] as $prov){ ?>
 					<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
 					<?php } ?>
 			</select>
-			<span title="<?php print($l->t('Keep directory structure')); ?>" class="overwrite"><input type="checkbox" value="0" /></span>
-		</div>
-		<span class="urlc" title="<?php print($l->t('Type URL and hit enter to load')); ?>">
-			<input id="folderurl" type="text" class="url" value="" placeholder="<?php print($l->t('URL of the folder to download')); ?>" />
+			<span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
+				<span class="slider-button">flat</span>
+			</span>
+			<input type="checkbox" value="0" class="slider-check" />
+		<span class="urlc" title="<?php print($l->t('URL of the folder to download')); ?>">
+			<input id="folderurl" type="text" class="url" value="" placeholder="<?php print($l->t('Folder URL')); ?>" />
+		</span>
+		<span class="load" title="<?php print($l->t('List content of folder')); ?>">
+			<button id="loadFolder"><?php print($l->t('List folder')); ?></button>
 		</span>
 		<span class="dling"></span>
 	</div>
@@ -71,7 +75,6 @@ OCP\Util::addScript('downloader', 'dls');
 		<span class="urlc" title="<?php print($l->t('Type name and hit enter to save')); ?>">
 			<input id="urllist" type="text" class="url" value="" placeholder="<?php print($l->t('File name')); ?>" />
 		</span>
-		<span title="<?php print($l->t('Preserve directory structure')); ?>" class="overwrite"><input type="checkbox" value="0" /></span>
 		<span class="dling"></span>
 	</div>
 </div>
@@ -83,41 +86,43 @@ OCP\Util::addScript('downloader', 'dls');
 	<?php if(isset($_['curl_error'])){ ?>
 	<div class="personalblock red">
 		<?php print($l->t('The application needs the <strong>PHP cURL</strong> extension to be loaded !')); ?>
-	</div>	
+	</div>
 	<?php }else{ ?>
 		<div id="dllist" class="personalblock">
 			<div id="elt_1" class="elts new">
-				<div class="eltleft">
-					<select class="chzen-select" data-placeholder="<?php print($l->t('Select provider')); ?>">
+					<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
 						<option value="0"></option>
 						<?php foreach($_['user_prov_set'] as $prov){ ?>
 						<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
 						<?php } ?>
 					</select>
-					<span title="<?php print($l->t('Preserve directory structure')); ?>" class="overwrite"><input type="checkbox" value="0" /></span>
-				</div>
-				<span class="urlc" title="<?php print($l->t('URL')); ?>">
-					<input type="text" class="url" value="" placeholder="<?php print($l->t('URL of the file to download')); ?>" />
+				<span title="<?php print($l->t('Keep directory structure')); ?>" class="slider-frame">
+					<span class="slider-button">flat</span>
 				</span>
-				<button class="addelt">+</button>
+				<input type="checkbox" value="0" class="slider-check" />
+				<span class="urlc" title="<?php print($l->t('URL of the file to download')); ?>">
+					<input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
+				</span>
+				<button class="addelt" title="Add another download">+</button>
 				<span class="dling"></span>
-			</div>
 		</div>
+	</div>
 		<div id="hiddentpl">
-			<div class="eltleft">
-				<select class="chzen-select" data-placeholder="<?php print($l->t('Select provider')); ?>">
+				<select class="chzen-select" title="<?php print($l->t('Select data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
 					<option value="0"></option>
 					<?php foreach($_['user_prov_set'] as $prov){ ?>
 					<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
 					<?php } ?>
 				</select>
-				<span title="<?php print($l->t('Preserve directory structure')); ?>" class="overwrite"><input type="checkbox" value="0" /></span>
-			</div>
-			<span class="urlc" title="<?php print($l->t('URL')); ?>">
-				<input type="text" class="url" value="" placeholder="<?php print($l->t('URL of the file to download')); ?>" />
+				<span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
+					<span class="slider-button">flat</span>
+				</span>
+				<input type="checkbox" value="0" class="slider-check" />
+			<span class="urlc" title="<?php print($l->t('URL of the file to download')); ?>">
+				<input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
 			</span>
-			<button class="eltdelete">-</button>
-			<button class="addelt">+</button>
+			<button class="eltdelete" title="Remove this download">-</button>
+			<button class="addelt" title="Add another download">+</button>
 			<span class="dling"></span>
 		</div>
 	<?php } ?>
@@ -149,8 +154,7 @@ OCP\Util::addScript('downloader', 'dls');
 			</tbody>
 		</table>
 	</div>
-</div>
 <br />
 <div id="oc_pw_dialog">
-<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="downloader_pw" />
+<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="importer_pw" />
 </div>

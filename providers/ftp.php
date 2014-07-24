@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,12 +23,12 @@
 * 
 */
 
-require_once('downloader/lib/downloaderFTP.class.php');
+require_once('importer/lib/importerFTP.class.php');
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
-$l = new OC_L10N('downloader');
+$l = new OC_L10N('importer');
 
 set_time_limit(0);
 ini_alter("memory_limit", "1024M");
@@ -47,13 +47,13 @@ error_reporting(6135);
 	</head>
 	<body>
 		<?php
-		$dl = new OC_downloaderFTP();
+		$dl = new OC_importerFTP();
 		echo '<div style="width:99%;">';
 		$dl->pb->render();
 		echo '</div>';
-		$dl->pb->setText($l->t('Preparing download ...'));
+		$dl->pb->setText($l->t('Preparing...'));
 		
-		if(!OC_downloaderFTP::checkFTPMod()){
+		if(!OC_importerFTP::checkFTPMod()){
 			$dl->pb->setError($l->t('FTP mod is disabled'));
 		}
 		else{

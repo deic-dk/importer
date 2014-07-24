@@ -1,18 +1,18 @@
 <?php
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
 $ret = array();
 
-OC_Log::write('downloader',"Trying to decrypt master password", OC_Log::WARN);
+OC_Log::write('importer',"Trying to decrypt master password", OC_Log::WARN);
 
-$pw = OC_downloader::getMasterPw();
+$pw = OC_importer::getMasterPw();
 
 $ret['pw'] = 0;
 
 if($pw!==null && $pw!==false){
-	OC_Log::write('downloader',"OK - decrypted master password", OC_Log::WARN);
+	OC_Log::write('importer',"OK - decrypted master password", OC_Log::WARN);
 	$ret['pw'] = 1;
 }
 

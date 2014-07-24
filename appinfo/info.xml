@@ -1,13 +1,12 @@
 <?xml version="1.0"?>
 <info>
-  <id>downloader</id>
-  <name>downloader</name>
+  <id>importer</id>
+  <name>Importer</name>
   <description>Allows to download files from the Internet directly to the server.</description>
   <version>2.2</version>
   <licence>AGPL</licence>
-  <author>Xavier Beurois</author>
-  <author>Frederik Orellana</author>
-  <require>4.93</require>
+	<author>Frederik Orellana, Xavier Beurois</author>
+	<require>4.93</require>
   <shipped>true</shipped>
   <remote>
     <ingest>appinfo/remote.php</ingest>

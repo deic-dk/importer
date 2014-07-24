@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,19 +21,19 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
 $folderurl = $_POST['url'];
 $provider = array_key_exists ('provider' , $_POST)?$_POST['provider']:"";
 
-OC_Log::write('downloader',"Provider: ".$provider, OC_Log::WARN);
+OC_Log::write('importer',"Provider: ".$provider, OC_Log::WARN);
 
 $user_info = NULL;
 
 $k = array();
 
-$providers = OC_downloader::getUserProvidersList(1, 1);
+$providers = OC_importer::getUserProvidersList(1, 1);
 
 if(empty($provider)){
   foreach($providers as $p){
@@ -44,7 +44,7 @@ if(empty($provider)){
   }
 }
 
-OC_Log::write('downloader',"Provider: ".$provider, OC_Log::WARN);
+OC_Log::write('importer',"Provider: ".$provider, OC_Log::WARN);
 
 if(!empty($provider)){
 	foreach($providers as $p){
@@ -53,10 +53,10 @@ if(!empty($provider)){
 		}
 	}
 	if(preg_match('/^pr_([^_^&]+)$/', $provider, $m)){
-		$user_info = OC_downloader::getUserProviderInfo($m[1]);
+		$user_info = OC_importer::getUserProviderInfo($m[1]);
 	}
 	else{
-		OC_Log::write('downloader', "Bad format of provider ID: ".$provider, OC_Log::ERROR);
+		OC_Log::write('importer', "Bad format of provider ID: ".$provider, OC_Log::ERROR);
 		$k['error'] = "Protocol not supported.";
 	}
 }
@@ -78,8 +78,8 @@ $folderurl = trim($folderurl);
 $folderurl = $folderurl . (substr($folderurl,-1)==='/'?"":"/");
 $out = array();
 
-require_once('downloader/lib/downloader'.$myprovider.'.class.php');
-$myprovider = 'OC_downloader'.$myprovider;
+require_once('importer/lib/importer'.$myprovider.'.class.php');
+$myprovider = 'OC_importer'.$myprovider;
 try{
 	$out = $myprovider::lsDir($folderurl, $user_info);
 }
@@ -103,7 +103,7 @@ foreach ($out as &$value) {
   if(substr($value, -1)==='/'){
   	continue;
   }
-  //OC_Log::write('downloader',$i.' --> '.$k['url'.$i], OC_Log::WARN);
+  //OC_Log::write('importer',$i.' --> '.$k['url'.$i], OC_Log::WARN);
   $i = $i+1;
   $k['url'.$i] = $value;
 }

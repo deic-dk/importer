@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -22,10 +22,12 @@
 * 
 */
 
+require_once('files/cache/updater.php');
+
 /**
- * This class manages downloader HTTP downloads. 
+ * This class manages importer HTTP downloads. 
  */
-class OC_downloaderHTTP {
+class OC_importerHTTP {
 
 	public $pb;
 	protected $batch;
@@ -34,9 +36,9 @@ class OC_downloaderHTTP {
 	
 	function __construct($b = FALSE) {
 		$this->batch = $b;
-		OC_Log::write('downloader',"Batch: ".$this->batch, OC_Log::WARN);
+		OC_Log::write('importer',"Batch: ".$this->batch, OC_Log::WARN);
 		if(!$this->batch){
-			$this->pb = new OC_downloaderPB();
+			$this->pb = new OC_importerPB();
 		}
   }
    
@@ -59,7 +61,7 @@ class OC_downloaderHTTP {
 	/**
 	 * List directory contents recursively.
 	 * @param $folderurl The URL of the directory whose content will be listed
-	 * @param $user_info credentials array (see downloader.class.php)
+	 * @param $user_info credentials array (see importer.class.php)
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
@@ -79,16 +81,17 @@ class OC_downloaderHTTP {
 		}
 
 		$out = array();
-		$tmpdir = OC_downloader::mktmpdir();
+		$tmpdir = OC_importer::mktmpdir();
 		# First check if we can crawl using index.html files
 		$cmd = "/usr/local/bin/wget --no-check-certificate ".$user_str1." ".$password_str1." -P $tmpdir -r -l 5 -nH --cut-dirs=5 --no-parent --spider --reject='index.html\*' -e robots=off --server-response '".$folderurl."' 2>&1 | grep -r '^--' | grep -rv '/?' | grep -v '/$' | sed 's|.* http://|http://|' | sed 's|.* https://|https://|' | grep  '^http'";
-		OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
+		OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
 		exec($cmd, $out, $ret);
 		shell_exec("rmdir ".$tmpdir);
 		# Now try if webdav is supported
+
 		if(empty($out)){
-			$cmd = OC_App::getAppPath('downloader')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
-			OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
+			$cmd = OC_App::getAppPath('importer')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
+			OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
 			exec($cmd, $out, $ret);
 		}
 		return $out;
@@ -120,7 +123,7 @@ class OC_downloaderHTTP {
 			
 			$fs = self::getStorage();
 			
-			$dl_dir = strlen($dir)==0?OC_downloader::getDownloadFolder():( $dir[0]==='/'?$dir:OC_downloader::getDownloadFolder()."/".$dir);
+			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
 			
 			$parsed_url = parse_url($url);
 			$rpathinfo = pathinfo($parsed_url['path']);
@@ -132,7 +135,7 @@ class OC_downloaderHTTP {
 				foreach($dirs as $dir){
 					$mydir = $mydir . "/" . $dir;
 					if(!$fs->file_exists($mydir)){
-					OC_Log::write('downloader','Creating: '.$mydir, OC_Log::WARN);
+					OC_Log::write('importer','Creating: '.$mydir, OC_Log::WARN);
 						$fs->mkdir($mydir, 0755, true);
 					}
 				}
@@ -144,12 +147,12 @@ class OC_downloaderHTTP {
 				}
 			}
 
-		  $user_info = OC_downloader::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
+		  $user_info = OC_importer::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
 
 			$code = 0;
 			if(!self::checkFileAccess($url, $code, $user_info)){
 				if(!self::checkFileAccess($url, $code, $user_info, FALSE)){
-					throw new Exception($l->t(array_key_exists($code, self::$http_codes)?self::$http_codes[$code]:"Unknown return code: ".$code));
+					throw new Exception((array_key_exists($code, self::$http_codes)?self::$http_codes[$code]:"Unknown return code: ".$code));
 				}
 			}
 
@@ -168,17 +171,17 @@ class OC_downloaderHTTP {
 				}
 				
 				elseif($overwrite==='auto' && $fs->filesize($dl_dir . "/" . $filename)===$size){
-					OC_Log::write('downloader','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
+					OC_Log::write('importer','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
 					$skip_file = TRUE;
 				}
 				else{
-				  OC_Log::write('downloader','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
+				  OC_Log::write('importer','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
 				}
 			}
 			
 			$fs = $fs->fopen($dl_dir . "/" . $filename, 'w');
 			
-		  OC_Log::write('downloader','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
+		  OC_Log::write('importer','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
 			
 			
 			$chunkSize = self::getChunkSize($size);
@@ -201,8 +204,17 @@ class OC_downloaderHTTP {
 				          'max_redirects' => '10'
 				        )
 				);
-				$context = stream_context_create($opts);
 			}
+			else{
+				$opts = array (
+				        	'http' => array (
+				          'method' => "GET",
+				          'user_agent' => self::$USER_AGENT,
+				          'max_redirects' => '10'
+				        )
+				);
+			}
+			$context = stream_context_create($opts);
 
 		  if(!($fp = fopen($url, 'rb', FALSE, $context))){
 				throw new Exception('Failed opening URL' . stream_get_meta_data($fp));
@@ -212,7 +224,7 @@ class OC_downloaderHTTP {
 			$start_time = microtime(TRUE);
 			while(!$skip_file && !feof($fp)){
 				$data = @fread($fp, $chunkSize);
-				if($skip_file || $data == ''){
+				if($skip_file || $data == null || $data == '' || $data == 'null'){
 					break;
 				}
 				$saved = fwrite($fs, $data);
@@ -228,6 +240,7 @@ class OC_downloaderHTTP {
 				if($received > $last + $chunkSize){
 					if(!$this->batch){
 						$this->pb->setProgressBarProgress($percent);
+						//OC_Log::write('importer', $percent, OC_Log::WARN);
 					}
 					else{
 						if($verbose){
@@ -239,12 +252,13 @@ class OC_downloaderHTTP {
 				}
 				usleep(100);
 			}
+			\OC\Files\Cache\Updater::writeUpdate($dl_dir . "/" . $filename);
 			$end_time = microtime(TRUE);
 			$spent_time = $end_time-$start_time;
 			$mbps = $size/$spent_time/(pow(10, 6));
 			if(!$this->batch){
 				$this->pb->setProgressBarProgress(100);
-				OC_downloader::setUserHistory($filename, 1);
+				OC_importer::setUserHistory($url, 1);
 			}
 			else{
 				print(($skip_file?"Skipped":"Done")." (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s, chunksize: ".$chunkSize.")\n");
@@ -285,7 +299,7 @@ class OC_downloaderHTTP {
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); 
 		curl_setopt($ch, CURLOPT_TIMEOUT, 120);
 		if($user_info == NULL){
-			$user_info = OC_downloader::getUserProviderInfo('HTTP');
+			$user_info = OC_importer::getUserProviderInfo('HTTP');
 		}
 		$purl = parse_url($url);
 		if(preg_match('/^(https*:\/\/)([^@]+):([^@]+)@(.+)$/', $url, $m)){
@@ -294,12 +308,12 @@ class OC_downloaderHTTP {
 			$user_info['us_password'] = $m[3];
 		}
 		if(!empty($user_info) && isset($user_info['us_username'])){
-			OC_Log::write('downloader','Using auth: '.$user_info['us_username'].":".$user_info['us_password'], OC_Log::WARN);
+			OC_Log::write('importer','Using auth: '.$user_info['us_username'].":".$user_info['us_password'], OC_Log::WARN);
 			//curl_setopt($ch, CURLOPT_UNRESTRICTED_AUTH, TRUE);
 			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC ) ; 
 			curl_setopt($ch, CURLOPT_USERPWD, $user_info['us_username'].":".$user_info['us_password']);
 		}
-		OC_Log::write('downloader','Checking: '.$url, OC_Log::WARN);
+		OC_Log::write('importer','Checking: '.$url, OC_Log::WARN);
 		$res = curl_exec($ch);
 	  curl_close($ch);
 	  return $res;
@@ -313,6 +327,7 @@ class OC_downloaderHTTP {
 	 * @return Int Size of the remote file 
 	 */
 	private static function getRemoteFileSize($remoteFile, $user_info, $head = TRUE){
+		OC_Log::write('importer','Checking size of: '.$remoteFile, OC_Log::WARN);
 		$data = static::execURL($remoteFile, $user_info, $head);
 		if($data === false){
 			return 0;
@@ -334,6 +349,7 @@ class OC_downloaderHTTP {
 	 * @return Boolean
 	 */
 	private static function checkFileAccess($url, &$code, $user_info, $head = TRUE){
+		OC_Log::write('importer','Checking rights of: '.$url, OC_Log::WARN);
 		$code = 'unknown';
 		$data = static::execURL($url, $user_info, $head);
 		if($data === false){

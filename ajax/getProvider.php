@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,14 +21,14 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
 $pr = $_POST['p'];
 
 $k = Array('e' => TRUE);
 if(preg_match('/^pr_([0-9]{1,4})$/', $pr, $m)){
-	$p = OC_downloader::getProvider($m[1]);
+	$p = OC_importer::getProvider($m[1]);
 	if(isset($p['pr_name'])){
 		$k['e'] = FALSE;
 		$k['n'] = strtolower($p['pr_name']);

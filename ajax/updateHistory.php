@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -21,18 +21,18 @@
 * 
 */
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
 $clear = $_POST['clear'];
 $k = Array('e' => TRUE);
-$l = new OC_L10N('downloader');
+$l = new OC_L10N('importer');
 
 if($clear == '1'){
-	OC_downloader::clearUserHistory();
+	OC_importer::clearUserHistory();
 	$k['e'] = FALSE;
 }
-else if($k['h'] = OC_downloader::getUserHistory($l)){
+else if($k['h'] = OC_importer::getUserHistory($l)){
 	$k['e'] = FALSE;
 }
 

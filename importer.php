@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -22,21 +22,21 @@
 * 
 */
 
-OCP\App::checkAppEnabled('downloader');
+OCP\App::checkAppEnabled('importer');
 OCP\User::checkLoggedIn();
 
-OCP\App::setActiveNavigationEntry('downloader_index');
+OCP\App::setActiveNavigationEntry('importer_index');
 
-$tmpl = new OCP\Template('downloader', 'downloader.tpl', 'user');
+$tmpl = new OCP\Template('importer', 'importer.tpl', 'user');
 
-// Get user downloader settings
+// Get user importer settings
 if(!in_array('curl', get_loaded_extensions())){
 	$tmpl->assign('curl_error', TRUE);
 }else{
-	$l = new OC_L10N('downloader');
+	$l = new OC_L10N('importer');
 	
-	$tmpl->assign('user_prov_set', OC_downloader::getProvidersList());
-	$tmpl->assign('user_history', OC_downloader::getUserHistory($l));
+	$tmpl->assign('user_prov_set', OC_importer::getProvidersList());
+	$tmpl->assign('user_history', OC_importer::getUserHistory($l));
 }
 
 $tmpl->printPage();

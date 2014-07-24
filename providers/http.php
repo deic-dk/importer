@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,14 +23,16 @@
 * 
 */
 
-require_once('downloader/lib/downloader.class.php');
-require_once('downloader/lib/downloaderHTTP.class.php');
-require_once('downloader/lib/downloaderPB.class.php');
+require_once('importer/lib/importer.class.php');
+require_once('importer/lib/importerHTTP.class.php');
+require_once('importer/lib/importerPB.class.php');
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
-$l = new OC_L10N('downloader');
+OCP\Util::addScript('importer', 'pb');
+
+$l = new OC_L10N('importer');
 
 set_time_limit(0);
 ini_alter("memory_limit", "1024M");
@@ -46,14 +48,16 @@ error_reporting(6135);
 		<style type="text/css">
 			body{color:#555;font:0.6em "Lucida Grande",Arial,Verdana,sans-serif;font-weight:normal;text-shadow:0 1px 0 #FFF;margin:0 1px 0 0;overflow:hidden;}
 		</style>
+		<script type="text/javascript" src="/core/js/jquery-1.10.0.min.js"></script>
+		<script type="text/javascript" src="/apps/importer/js/pb.js"></script>
 	</head>
 	<body>
 		<?php
-		$dl = new OC_downloaderHTTP();
+		$dl = new OC_importerHTTP();
 		echo '<div style="width:99%;">';
 		$dl->pb->render();
 		echo '</div>';
-		$dl->pb->setText($l->t('Preparing download ...'));
+		$dl->pb->setText($l->t('Preparing...'));
 		
 		$pr = array_key_exists('p', $_GET)?urldecode(trim($_GET['p'])):'';
 		$url = array_key_exists('u', $_GET)?urldecode(trim($_GET['u'])):'';

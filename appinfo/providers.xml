@@ -3,20 +3,21 @@
 	<provider>
 		<name>HTTP</name>
 		<auth>1</auth>
+		<desc>HTTP or HTTPS download with standard clear-text username/password.</desc>
 	</provider>
 	<provider>
 		<name>FTP</name>
 		<auth>1</auth>
+		<desc>Passive or active FTP with standard clear-text username/password.</desc>
 	</provider>
 	<provider>
 		<name>S3</name>
 		<auth>1</auth>
+		<desc>The Amazon AWS Simple Storage Service. You must sign up with Amazon to get username and password.</desc>
 	</provider>
 	<provider>
 		<name>IA</name>
 		<auth>1</auth>
-	</provider>	<provider>
-		<name>YouTube</name>
-		<auth>0</auth>
+		<desc>The Internet Archive. You must sign up with ia.org to get username and password.</desc>
 	</provider>
 </providers>

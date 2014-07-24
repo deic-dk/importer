@@ -1,13 +1,13 @@
 <?php
 
-require_once('downloader/lib/downloader.class.php');
-require_once('downloader/lib/downloaderIA.class.php');
-require_once('downloader/lib/downloaderPB.class.php');
+require_once('importer/lib/importer.class.php');
+require_once('importer/lib/importerIA.class.php');
+require_once('importer/lib/importerPB.class.php');
 
-OCP\JSON::checkAppEnabled('downloader');
+OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
-$l = new OC_L10N('downloader');
+$l = new OC_L10N('importer');
 
 set_time_limit(0);
 ini_alter("memory_limit", "1024M");
@@ -26,11 +26,11 @@ error_reporting(6135);
 	</head>
 	<body>
 		<?php
-		$dl = new OC_downloaderIA();
+		$dl = new OC_importerIA();
 		echo '<div style="width:99%;">';
 		$dl->pb->render();
 		echo '</div>';
-		$dl->pb->setText($l->t('Preparing download ...'));
+		$dl->pb->setText($l->t('Preparing...'));
 		
 		$pr = array_key_exists('p', $_GET)?urldecode(trim($_GET['p'])):'';
 		$url = array_key_exists('u', $_GET)?urldecode(trim($_GET['u'])):'';

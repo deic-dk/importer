@@ -1,7 +1,7 @@
 <?php
 
 /**
-* ownCloud downloader app
+* ownCloud importer app
 *
 * @author Xavier Beurois
 * @copyright 2012 Xavier Beurois www.djazz-lab.net
@@ -23,12 +23,12 @@
 */
 
 /**
- * This class manages downloader FTP downloads. 
+ * This class manages importer FTP downloads. 
  */
  
-require_once('downloader/lib/downloaderPB.class.php');
+require_once('files/cache/updater.php');
 
-class OC_downloaderFTP {
+class OC_importerFTP {
 	
 	private $conn;
 	public $pb;
@@ -36,7 +36,7 @@ class OC_downloaderFTP {
 	
 	function __construct($b = false) {
 		$this->batch = $b;
-		$this->pb = new OC_downloaderPB();
+		$this->pb = new OC_importerPB();
 	}
    
 	function __destruct() {
@@ -97,7 +97,7 @@ class OC_downloaderFTP {
 	/**
 	 * List directory contents recursively.
 	 * @param $folderurl The URL of the directory whose content will be listed
-	 * @param $user_info credentials array (see downloader.class.php)
+	 * @param $user_info credentials array (see importer.class.php)
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
@@ -105,7 +105,7 @@ class OC_downloaderFTP {
 		// wget -r ftp://ftp@ftp.funet.fi/pub/mirrors/mirror.cs.wisc.edu/pub/mirrors/ghost/contrib/
 		// Unfortunately this does not work with all servers - notably not ftp://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/data/HG00096/
     //$cmd = "/usr/local/bin/ncftpls -gg ".$user_str." ".$password_str." ".$folderurl." | grep -v '/$' | sed 's|@$||' | sed 's|^|".$folderurl."|'";
-    //OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
+    //OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
     //exec($cmd, $out, $ret);
 		// So, we use a custom script
 
@@ -117,8 +117,8 @@ class OC_downloaderFTP {
 		}
 
 		$out = array();
-    $cmd = OC_App::getAppPath('downloader')."/lib/ftpfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
-    OC_Log::write('downloader',"Executing; ".$cmd, OC_Log::WARN);
+    $cmd = OC_App::getAppPath('importer')."/lib/ftpfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
+    OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
     exec($cmd, $out, $ret);
 		return $out;
 	}
@@ -138,7 +138,7 @@ class OC_downloaderFTP {
 			$user = "";
 			$pass = "";
 			
-			$user_info = OC_downloader::getUserProviderInfo('FTP', $masterpw);
+			$user_info = OC_importer::getUserProviderInfo('FTP', $masterpw);
 			if(isset($user_info['us_username'])){
 				$user = $user_info['us_username'];
 				$pass = $user_info['us_password'];
@@ -168,11 +168,11 @@ class OC_downloaderFTP {
 			if($size<=0){
 				throw new Exception($l->t('File size is').' '.$size);
 			}
-			OC_Log::write('downloader','Size: '.$size, OC_Log::WARN);
+			OC_Log::write('importer','Size: '.$size, OC_Log::WARN);
 			
 			$fs = OCP\Files::getStorage('files');
 			
-			$dl_dir = strlen($dir)==0?OC_downloader::getDownloadFolder():( $dir[0]==='/'?$dir:OC_downloader::getDownloadFolder()."/".$dir);
+			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
 			
 			$parsed_url = parse_url($url);
 			$rpathinfo = pathinfo($parsed_url['path']);
@@ -184,7 +184,7 @@ class OC_downloaderFTP {
 				foreach($dirs as $dir){
 					$mydir = $mydir . "/" . $dir;
 					if(!$fs->file_exists($mydir)){
-						OC_Log::write('downloader','Creating: '.$mydir, OC_Log::WARN);
+						OC_Log::write('importer','Creating: '.$mydir, OC_Log::WARN);
 						$fs->mkdir($mydir, 0755, true);
 					}
 				}
@@ -225,6 +225,7 @@ class OC_downloaderFTP {
 				usleep(100);
 			  $ret = ftp_nb_continue($this->conn);
 			}
+			\OC\Files\Cache\Updater::writeUpdate($dl_dir . "/" . $filename);
 			$end_time = microtime(true);
 			$spent_time = $end_time-$start_time;
 			$mbps = $size/$spent_time/(pow(10, 6));
@@ -234,7 +235,7 @@ class OC_downloaderFTP {
 			else{
 				if(!$this->batch){
 					$this->pb->setProgressBarProgress(100);
-					OC_downloader::setUserHistory($filename, 1);
+					OC_importer::setUserHistory($url, 1);
 				}
 				else{
 				print("Done (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s)\n");

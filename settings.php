@@ -2,10 +2,10 @@
 
 OC_Util::checkAdminUser();
 
-OCP\Util::addscript('downloader', 'settings');
+OCP\Util::addscript('importer', 'settings');
 
-$tmpl = new OCP\Template( 'downloader', 'settings.tpl');
+$tmpl = new OCP\Template( 'importer', 'settings.tpl');
 
-$tmpl->assign( 'user_prov_set', OC_downloader::getProvidersList(-1));
+$tmpl->assign( 'user_prov_set', OC_importer::getProvidersList(-1));
 
 return $tmpl->fetchPage();

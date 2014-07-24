@@ -5,7 +5,7 @@
 	 <overwrite>false</overwrite>
 	 <charset>utf8</charset>
 	 <table>
-		<name>*dbprefix*downloader</name>
+		<name>*dbprefix*importer</name>
 		<declaration>
 			<field>
 				<name>dl_id</name>
@@ -51,7 +51,7 @@
 		</declaration>
 	</table>
 	<table>
-		<name>*dbprefix*downloader_providers</name>
+		<name>*dbprefix*importer_providers</name>
 		<declaration>
 			<field>
 				<name>pr_id</name>
@@ -67,6 +67,10 @@
 				<type>text</type>
 				<notnull>true</notnull>
 				<length>64</length>
+			</field>
+			<field>
+				<name>pr_desc</name>
+				<type>text</type>
 			</field>
 			<field>
 				<name>pr_auth</name>
@@ -94,7 +98,7 @@
 		</declaration>
 	</table>
 	<table>
-		<name>*dbprefix*downloader_users_settings</name>
+		<name>*dbprefix*importer_users_settings</name>
 		<declaration>
 			<field>
 				<name>us_id</name>
@@ -134,6 +138,7 @@
 				<type>text</type>
 				<notnull>true</notnull>
 				<length>512</length>
+				<default>null</default>
 			</field>
 			<index>
 				<name>us_pk</name>
