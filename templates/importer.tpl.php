@@ -34,7 +34,7 @@ OCP\Util::addScript('importer', 'dls');
 		<span class="titleleft">Import data</span><span class="subtitle"><?php print($l->t('from external URLs to')."</span> <a href='/index.php/apps/files?dir=".OC_importer::getDownloadFolder()."'>".OC_importer::getDownloadFolder()."</a>") ?>
 		<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
 		  <div class="dlbtn">
-		    <button id="geturl"><?php print($l->t('Download all files')); ?></button>
+		    <button id="geturl"><?php print($l->t('Import all files')); ?></button>
 		    <button id="clearList"><?php print($l->t('Clear list')); ?></button>
 		    <button id="savelist"><?php print($l->t('Save list')); ?></button>
 		    <button id="chooselist"><?php print($l->t('Load list from file')); ?></button>
