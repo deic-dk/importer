@@ -52,6 +52,9 @@ $dl_dir = OC_importer::getDownloadFolder();
 
 if(OCP\User::getUser() && strlen($dl_dir) != 0){
 	$fs = OCP\Files::getStorage('files');
+	if(!$fs){
+		return;
+	}
 	if(!$fs->is_dir($dl_dir)){
 		$fs->mkdir($dl_dir);
 	}
