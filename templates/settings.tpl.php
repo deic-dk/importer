@@ -1,5 +1,5 @@
 
-<fieldset id="importerSettings" class="personalblock">
+<fieldset id="importerSettings" class="section">
 
   <h2><?php p($l->t('Importer'));?></h2>
 
