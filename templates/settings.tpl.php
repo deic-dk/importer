@@ -1,5 +1,5 @@
 
-<fieldset id="dlSettings" class="personalblock">
+<fieldset id="importerSettings" class="personalblock">
 
   <h2><?php p($l->t('Importer'));?></h2>
 
