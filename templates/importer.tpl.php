@@ -23,7 +23,7 @@
 
 OCP\Util::addStyle('importer', 'styles');
 OCP\Util::addScript('3rdparty','chosen/chosen.jquery.min');
-OCP\Util::addStyle('3rdparty','chosen');
+OCP\Util::addStyle('3rdparty','chosen/chosen');
 
 OCP\Util::addScript('importer', 'dls');
 
@@ -48,7 +48,7 @@ OCP\Util::addScript('importer', 'dls');
 <div id='gallery' class="hascontrols"></div>
 <div id="importer">
 
-<div id="folder_pop" class="personalblock">
+<div id="folder_pop">
 	<div id="elt_0" class="elts folder">
 			<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
 					<option value="0"></option>
@@ -70,7 +70,7 @@ OCP\Util::addScript('importer', 'dls');
 	</div>
 </div>
 
-<div id="save_pop" class="personalblock">
+<div id="save_pop">
 	<div id="save_list" class="elts folder">
 		<span class="urlc" title="<?php print($l->t('Type name and hit enter to save')); ?>">
 			<input id="urllist" type="text" class="url" value="" placeholder="<?php print($l->t('File name')); ?>" />

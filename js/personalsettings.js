@@ -122,7 +122,7 @@ $(document).ready(function(){
 	});
 	$('.importer-delete').tipsy({gravity:'s',fade:true});
 
-	$("form#importer fieldset.personalblock div.importer_pr").each(function(el){
+	$("fieldset#importerPersonalSettings div.importer_pr").each(function(el){
 		var encVal;
 		$(this).find("input[type='password']").each(function(el){
 			$(this).showPassword();
@@ -145,7 +145,6 @@ $(document).ready(function(){
  mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
 		title: "Enter master password",
 		autoOpen: false,
-		width: $("label.nowrap").width()+64,
 		modal: true,
 		dialogClass: "no-close my-dialog",
 		buttons: {
@@ -172,7 +171,7 @@ $(document).ready(function(){
 		}
 	});
 
-	$("form#importer fieldset.personalblock #importer_settings_submit").bind('click', function(){
+	$("fieldset#importerPersonalSettings #importer_settings_submit").bind('click', function(){
 		// Get the clear-text password cloned into the password field which is actually submmitted.
 		$("input.personal-show[type='checkbox']").each(function(el){
 			if($(this).is(':checked')){
