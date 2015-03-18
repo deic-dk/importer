@@ -164,7 +164,7 @@ class OC_importer {
 	
 	/**
 	 * Get the download folder
-	 * @param $raw If us_download_folder is not set in the database, either an empty string or "/Data" is returned, depending on whether this is set or not
+	 * @param $raw If us_download_folder is not set in the database, either an empty string or "/" is returned, depending on whether this is set or not
 	 * @return Array
 	 */
 	public static function getDownloadFolder($raw = 0){
@@ -174,7 +174,7 @@ class OC_importer {
 		if(count($result) > 0){
 		  $folder = trim($result[0]["us_download_folder"]);
 		}
-		return $folder!=''&&$folder!='null'&&$folder!=null?$folder:($raw?"":"/Data");
+		return $folder!=''&&$folder!='null'&&$folder!=null?$folder:($raw?"":"/");
 	}
 	
 	/**
