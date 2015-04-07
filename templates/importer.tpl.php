@@ -45,7 +45,7 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 					<input type="text" name="importer_download_folder" class="url" value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>" placeholder="<?php print($l->t('/')); ?>" />
 				  </span>
 				  
-					<label class="importer_choose_download_folder btn btn-flat">browse</label>
+					<label class="importer_choose_download_folder btn btn-default btn-flat">Browse</label>
 					<div id="download_folder" style="visibility:hidden;display:none;"></div>
 					<div class="importer_folder_dialog" display="none">
 						<div class="loadFolderTree"></div>
