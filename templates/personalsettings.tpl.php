@@ -36,7 +36,7 @@ OCP\Util::addStyle('importer', 'personalsettings');
 	<?php foreach($_['pr_list'] as $p){ ?>
 	<div class="importer_pr" id="importer_pr_<?php print($p['pr_id']); ?>">
 		<span style="float:left;width:100px;">
-			<label title="<?php print($p['pr_desc']); ?>"><?php print($p['pr_name']); ?></label>
+			<label title="<?php print(isset($p['pr_desc'])?$p['pr_desc']:''); ?>"><?php print($p['pr_name']); ?></label>
 		</span>
 		<input class="username" type="text" autocomplete="off" name="importer_pr_un_<?php print($p['pr_id']); ?>" id="importer_pr_un_<?php print($p['pr_id']); ?>" value="<?php print(!is_null($p['us_id'])?$p['us_username']:''); ?>" placeholder="Username" />
 
@@ -52,7 +52,15 @@ OCP\Util::addStyle('importer', 'personalsettings');
 		<?php } ?>
 	<br />
 	Download folder:
-	<input type="text" id="importer_download_folder" name="importer_download_folder" value="<?php print(!is_null($_['us_download_folder'])?$_['us_download_folder']:''); ?>" placeholder="/"/>
+	<input type="text" name="importer_download_folder" value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>" placeholder="/"/>
+	
+	<label class="importer_choose_download_folder btn btn-flat">browse</label>
+	<div id="download_folder" style="visibility:hidden;display:none;"></div>
+	<div class="importer_folder_dialog" display="none">
+		<div class="loadFolderTree"></div>
+		<div class="file" style="visibility: hidden; display:inline;"></div>
+	</div>
+	
 	<br />
 	<br />
 	<label id="importer_settings_submit" class="button">Save</label>&nbsp;<label id="importer_msg"></label>

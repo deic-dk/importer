@@ -25,6 +25,11 @@ OCP\JSON::checkAppEnabled('importer');
 OCP\User::checkLoggedIn();
 
 OCP\Util::addscript('importer', 'personalsettings');
+OCP\Util::addscript('importer', 'browse');
+
+OCP\Util::addStyle('chooser', 'jqueryFileTree');
+OCP\Util::addscript('chooser', 'jquery.easing.1.3');
+OCP\Util::addscript('chooser', 'jqueryFileTree');
 
 $errors = Array();
 
@@ -57,13 +62,13 @@ if(isset($_GET['importer']) && $_GET['importer'] == 1){
 	}
 }
 
-OC_Log::write('importer',"Cookie has value ".$_COOKIE['importerPw'], OC_Log::WARN);
+OC_Log::write('importer',"Cookie has value ".$_COOKIE['importerPw'], OC_Log::DEBUG);
 
 $ret = openssl_decrypt('dum', 'aes-128-cbc', 'test');
-OC_Log::write('importer',"Decryption test: ".$ret, OC_Log::WARN);
+OC_Log::write('importer',"Decryption test: ".$ret, OC_Log::DEBUG);
 
 $tmpl = new OCP\Template('importer', 'personalsettings.tpl');
 $tmpl->assign('errors', $errors);
 $tmpl->assign('pr_list', OC_importer::getUserProvidersList(1));
-$tmpl->assign('us_download_folder', OC_importer::getDownloadFolder(1));
+$tmpl->assign('download_folder', OC_importer::getDownloadFolder(1));
 return $tmpl->fetchPage();

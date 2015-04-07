@@ -22,139 +22,308 @@
 */
 
 OCP\Util::addStyle('importer', 'styles');
+OCP\Util::addStyle('files', 'files');
 OCP\Util::addScript('3rdparty','chosen/chosen.jquery.min');
 OCP\Util::addStyle('3rdparty','chosen/chosen');
 
 OCP\Util::addScript('importer', 'dls');
+OCP\Util::addScript('importer', 'extra'); // temporary javascript added by Christian 
+OCP\Util::addScript('importer', 'browse');
+
+OCP\Util::addStyle('chooser', 'jqueryFileTree');
+OCP\Util::addscript('chooser', 'jquery.easing.1.3');
+OCP\Util::addscript('chooser', 'jqueryFileTree');
 
 ?>
+<div id="app-content-importer" class="viewcontainer">
+<div id="controls" style="max-height:63px;min-height:63px;">
+	<div class="row">
+      <div class="col-sm-5">
+				<div id="destination">
+				  <span>Destination folder</span>
+				  <span class="urlc">
+					<input type="text" name="importer_download_folder" class="url" value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>" placeholder="<?php print($l->t('/')); ?>" />
+				  </span>
+				  
+					<label class="importer_choose_download_folder btn btn-flat">browse</label>
+					<div id="download_folder" style="visibility:hidden;display:none;"></div>
+					<div class="importer_folder_dialog" display="none">
+						<div class="loadFolderTree"></div>
+						<div class="file" style="visibility: hidden; display:inline;"></div>
+					</div>  
+	
+	</div>
+	  </div>
+	  
+	  <div class="col-sm-7 text-right">
 
-<div id="controls">
-	<div class="titleblock">
-		<span class="titleleft">Import data</span><span class="subtitle"><?php print($l->t('from external URLs to')."</span> <a href='/index.php/apps/files?dir=".OC_importer::getDownloadFolder()."'>".OC_importer::getDownloadFolder()."</a>") ?>
 		<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
-		  <div class="dlbtn">
-		    <button id="geturl"><?php print($l->t('Import all files')); ?></button>
-		    <button id="clearList"><?php print($l->t('Clear list')); ?></button>
-		    <button id="savelist"><?php print($l->t('Save list')); ?></button>
-		    <button id="chooselist"><?php print($l->t('Load list from file')); ?></button>
-		    <button id="getfolderurl"><?php print($l->t('List folder URL')); ?></button>
+		  <div class="actions creatable">
+		    <button id="clearList"    class="btn btn-default btn-flat"><?php print($l->t('Clear all')); ?></button>
+		    <button id="savelist"     class="btn btn-default btn-flat"><?php print($l->t('Save to file')); ?></button>
+		    <button id="chooselist"   class="btn btn-default btn-flat"><?php print($l->t('Load from file')); ?></button>
+		    <button id="showhist"     class="btn btn-default btn-flat" style="min-width:108px"><?php print($l->t('Show history')); ?></button>
 		  </div>
 		  <div class='clear'></div>
-		<?php } ?>
-		<div class="clear"></div>
+		  <?php } ?>
+		  <div class="clear"></div>
+		</div>
+	  </div>
 	</div>
-</div>
-<div id='gallery' class="hascontrols"></div>
-<div id="importer">
+	<!--	<div id='gallery' class="hascontrols"></div>-->
+	<div id="importer">
 
-<div id="folder_pop">
-	<div id="elt_0" class="elts folder">
-			<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
-					<option value="0"></option>
-					<?php foreach($_['user_prov_set'] as $prov){ ?>
-					<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
-					<?php } ?>
+	  <div id="folder_pop">
+		<div id="elt_0" class="elts folder">
+		  <select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
+			<option value="0"></option>
+			<?php foreach($_['user_prov_set'] as $prov){ ?>
+			<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
+			<?php } ?>
+		  </select>
+		  <span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
+			<span class="slider-button">flat</span>
+		  </span>
+		  <input type="checkbox" value="0" class="slider-check" />
+		  <span class="urlc" title="<?php print($l->t('URL of the folder to download')); ?>">
+			<input id="folderurl" type="text" class="url" value="" placeholder="<?php print($l->t('Folder URL')); ?>" />
+		  </span>
+		  <span class="load" title="<?php print($l->t('List content of folder')); ?>">
+			<button id="loadFolder"><?php print($l->t('List folder')); ?></button>
+		  </span>
+		  <span class="dling"></span>
+		</div>
+	  </div>
+
+	  <div id="save_pop">
+		<div id="save_list" class="elts folder">
+		  <span class="urlc" title="<?php print($l->t('Type name and hit enter to save')); ?>">
+			<input id="urllist" type="text" class="url" value="" placeholder="<?php print($l->t('File name')); ?>" />
+		  </span>
+		  <span class="dling"></span>
+		</div>
+	  </div>
+
+	  <div id="dialog0" title="<?php print($l->t('Choose file')); ?>">
+	  </div>
+	  <div id="chosen_file"></div>
+
+	  <?php if(isset($_['curl_error'])){ ?>
+	  <div class="personalblock red">
+		<?php print($l->t('The application needs the <strong>PHP cURL</strong> extension to be loaded !')); ?>
+	  </div>
+	  <?php }else{ ?>
+
+
+	  <div id="dllist"  style="margin-bottom: 20px; min-height: 55px;"> 
+		<table id="filestable" class="panel">
+		  <thead class="panel-heading">
+			<tr>
+			  <th class="col-sm-1">
+				<a class="columntitle">
+				  <span>Protocol</span>
+				</a>
+			  </th>
+			  <th class="col-sm-7">
+				<span>File or folder URL</span>
+			  </th>
+			  <th class="col-sm-1">
+			  </th>
+			  <th class="col-sm-3">
+				<span>Download progress</span>
+			  </th>
+			</tr>
+		  </thead>
+
+		  <tbody id="fileList">
+		  <tr id="elt_1" class="elts new">
+			<td>
+			  <div class="btn-group btn-group-xs ">
+				<a class="btn btn-flat btn-default pr-value" href="#" original-title="" data-id="pr_1" style="min-width:42px">HTTP</a>
+				<a class="btn btn-flat btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+				  <i class="icon-angle-down"></i>
+				</a>
+				<ul class="dropdown-menu" style="display: none;">
+				  <?php foreach($_['user_prov_set'] as $prov){ ?>
+				  <li data-id="pr_<?php print($prov['pr_id']); ?>">
+				  <a class="action" href="#"><span><?php print($prov['pr_name']); ?></span></a>
+				  </li>
+				  <?php } ?>
+				</ul>
+			  </div>
+
+			  <!--			  
+			  <select class="chzen-select" title="<?php //print($l->t('Data source')); ?>" data-placeholder="<?php //print($l->t('Data source')); ?>">
+				<option value="0"></option>
+				<?php //foreach($_['user_prov_set'] as $prov){ ?>
+				<option value="pr_<?php //print($prov['pr_id']); ?>"><?php //print($prov['pr_name']); ?></option>
+				<?php //} ?>
+			  </select>
+-->
+
+			</td>
+			<td>
+			  <span class="urlc" title="<?php print($l->t('enter URL')); ?>">
+				<input type="text" class="url" value="" placeholder="<?php print($l->t('enter URL')); ?>" / style="width:100%">
+			  </span>
+			</td>
+			<td>
+			  <span class="eltdelete hidden"><i class="icon icon-minus"></i></span>
+			  <span class="addelt hidden"><i class="icon icon-plus"></i></span>
+			</td>
+			<td>  
+<div>
+  <!--		      <span><a id="getfolderurl" class="btn btn-default btn-flat hidden"><?php print($l->t('List folder')); ?></a></span> -->
+			  <span class="dling"></span>
+</div>
+			</td>
+		  </tr>
+		  </tbody>
+		  <tfoot>
+			<tr class="summary text-sm" style="opacity:1">
+			  <td colspan=2>
+			  </td>
+			  <td>
+				<span title="<?php print($l->t('Keep directory structure')); ?>" class="slider-frame">
+				  <span class="slider-button">flat</span>
+				</span>
+				<input type="checkbox" value="0" class="slider-check" />
+			  </td>
+			  <td class="text-right">
+				<div id="geturl" class="btn btn-default btn-flat" style="opacity:0.3" ><?php print($l->t('Import all files')); ?></div>
+			  </td>
+			</tr>
+		  </tfoot>
+		</table>
+	  </div>
+
+
+	  <table id="hiddentpl" class="hidden">
+		<tbody>
+		<tr>
+		  <td>
+			<div class="btn-group btn-group-xs ">
+			  <a class="btn btn-flat btn-default pr-value" href="#" original-title="" data-id="pr_1" style="min-width:42px">HTTP</a>
+			  <a class="btn btn-flat btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+				<i class="icon-angle-down"></i>
+			  </a>
+			  <ul class="dropdown-menu" style="display: none;">
+				<?php foreach($_['user_prov_set'] as $prov){ ?>
+				<li data-id="pr_<?php print($prov['pr_id']); ?>">
+				<a class="action" href="#"><span><?php print($prov['pr_name']); ?></span></a>
+				</li>
+				<?php } ?>
+			  </ul>
+			</div>
+		  </td>
+		  <td>
+			<span class="urlc" title="<?php print($l->t('enter URL')); ?>">
+			  <input type="text" class="url" value="" placeholder="<?php print($l->t('enter URL')); ?>" / style="width:100%">
+			</span>
+		  </td>
+		  <td>
+			<span class="eltdelete"><i class="icon icon-minus"></i></span>
+			<span class="addelt hidden"><i class="icon icon-plus"></i></div>
+		  </td>
+		  <td>  
+			<span class="dling"></span>
+		  </td>
+		</tr>
+		<tbody>
+	  </table>
+
+	  <!--
+			  <div id="hiddentpl">
+			<select class="chzen-select" title="<?php print($l->t('Select data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
+			  <option value="0"></option>
+			  <?php foreach($_['user_prov_set'] as $prov){ ?>
+			  <option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
+			  <?php } ?>
 			</select>
 			<span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
-				<span class="slider-button">flat</span>
+			  <span class="slider-button">flat</span>
 			</span>
 			<input type="checkbox" value="0" class="slider-check" />
-		<span class="urlc" title="<?php print($l->t('URL of the folder to download')); ?>">
-			<input id="folderurl" type="text" class="url" value="" placeholder="<?php print($l->t('Folder URL')); ?>" />
-		</span>
-		<span class="load" title="<?php print($l->t('List content of folder')); ?>">
-			<button id="loadFolder"><?php print($l->t('List folder')); ?></button>
-		</span>
-		<span class="dling"></span>
-	</div>
-</div>
-
-<div id="save_pop">
-	<div id="save_list" class="elts folder">
-		<span class="urlc" title="<?php print($l->t('Type name and hit enter to save')); ?>">
-			<input id="urllist" type="text" class="url" value="" placeholder="<?php print($l->t('File name')); ?>" />
-		</span>
-		<span class="dling"></span>
-	</div>
-</div>
-
-<div id="dialog0" title="<?php print($l->t('Choose file')); ?>">
-</div>
-<div id="chosen_file"></div>
-
-	<?php if(isset($_['curl_error'])){ ?>
-	<div class="personalblock red">
-		<?php print($l->t('The application needs the <strong>PHP cURL</strong> extension to be loaded !')); ?>
-	</div>
-	<?php }else{ ?>
-		<div id="dllist" class="personalblock">
-			<div id="elt_1" class="elts new">
-					<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
-						<option value="0"></option>
-						<?php foreach($_['user_prov_set'] as $prov){ ?>
-						<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
-						<?php } ?>
-					</select>
-				<span title="<?php print($l->t('Keep directory structure')); ?>" class="slider-frame">
-					<span class="slider-button">flat</span>
-				</span>
-				<input type="checkbox" value="0" class="slider-check" />
-				<span class="urlc" title="<?php print($l->t('URL of the file to download')); ?>">
-					<input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
-				</span>
-				<button class="addelt" title="Add another download">+</button>
-				<span class="dling"></span>
-		</div>
-	</div>
-		<div id="hiddentpl">
-				<select class="chzen-select" title="<?php print($l->t('Select data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
-					<option value="0"></option>
-					<?php foreach($_['user_prov_set'] as $prov){ ?>
-					<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
-					<?php } ?>
-				</select>
-				<span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
-					<span class="slider-button">flat</span>
-				</span>
-				<input type="checkbox" value="0" class="slider-check" />
 			<span class="urlc" title="<?php print($l->t('URL of the file to download')); ?>">
-				<input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
+			  <input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
 			</span>
 			<button class="eltdelete" title="Remove this download">-</button>
 			<button class="addelt" title="Add another download">+</button>
 			<span class="dling"></span>
-		</div>
-	<?php } ?>
-	<div id="divhisto" class="personalblock">
-		<?php $status = Array($l->t('Unknown error'),$l->t('OK')); 
-		print($l->t('Download history')); ?>&nbsp;<button id="clearhistory" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><?php print($l->t('Clear')); ?></button>
-		<table border="0" cellpadding="0" cellspacing="0">
-			<thead>
-				<tr>
-					<th class="col1"><?php print($l->t('File')); ?></th>
-					<th class="col2"><?php print($l->t('Date / Time')); ?></th>
-					<th class="col3"><?php print($l->t('Status')); ?></th>
-				</tr>
-			</thead>
-			<tbody id="tbhisto">
-			<?php if(!$_['user_history']){ ?>
+		  </div>
+	-->	  
+
+
+
+	  <?php } ?>
+
+
+	  <p>
+
+
+
+	  <div id="divhisto" style="display:none">
+		<?php $status = Array($l->t('Unknown error'),$l->t('OK')); ?>
+		
+		<div class="text-right" style="margin-bottom:10px">
+		  <a id="clearhistory" class="btn btn-default btn-flat" role="button" aria-disabled="false"><?php print($l->t('Clear history')); ?></a>
+	    </div>
+		
+		<table id="histtable" class="panel">
+		  <thead class="panel-heading">
 			<tr>
-				<td colspan="4"><?php print($l->t('No history for now')); ?></td>
+			  <th id="fileName" class="column-name col-sm-8">
+				<a class="name sort columntitle" style="padding-left:15px;">
+				  <span><?php print($l->t('File')); ?></span>
+				</a>
+			  </th>
+			  <th id="headerSize" class="column-date col-sm-2">
+				<a class="date columntitle">
+				  <span>	<?php print($l->t('Date / Time')); ?></span>
+				</a>
+			  </th>
+
+
+			  <th id="headerDate" class="column-mtime col-sm-2">
+				<a class="status columntitle">
+				  <span><?php print($l->t('Status')); ?></span>
+				</a>
+			  </th>
 			</tr>
-			<?php }else{ 
-				foreach($_['user_history'] as $history){ ?>
-				<tr>
-					<td class="col1"><?php print($history['dl_file']); ?></td>
-					<td class="col2"><?php print($history['dl_ts']); ?></td>
-					<td class="col3"><?php print($status[$history['dl_status']]); ?></td>
-				</tr>
-				<?php }
-			} ?>
-			</tbody>
+		  </thead>
+
+
+
+		  <tbody id="filelist">
+		  <?php if(!$_['user_history']){ ?>
+		  <tr>
+			<td colspan="3">
+			  <span class="nohist"><?php print($l->t('No history for now')); ?></span>
+			</td>
+		  </tr>
+		  <?php }else{ 
+		  foreach($_['user_history'] as $history){ ?>
+		  <tr>
+			<td class="filename">
+			  <div class="filelink-wrap">
+				<a class="name" href="#">
+				  <span class="fileicon"><i class="icon-file-code"> </i></span>
+				  <span class="nametext"><?php print($history['dl_file']); ?></span>
+				</a>
+			  </div>
+			</td>
+			<td class="filesize"><?php print($history['dl_ts']); ?></td>
+			<td class="date"><?php print($status[$history['dl_status']]); ?></td>
+		  </tr>
+		  <?php }
+		  } ?>
+		  </tbody>
+		  <tfoot>
+		  </tfoot>
 		</table>
+	  </div>
+	  <br />
+	  <div id="oc_pw_dialog">
+		<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="importer_pw" />
+	  </div>
 	</div>
-<br />
-<div id="oc_pw_dialog">
-<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="importer_pw" />
-</div>

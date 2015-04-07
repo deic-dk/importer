@@ -62,6 +62,7 @@ error_reporting(6135);
 			$ow = array_key_exists('o', $_GET)?urldecode(trim($_GET['o'])):'';
 			$kd = array_key_exists('k', $_GET)?urldecode(trim($_GET['k'])):'';
 			$mp = array_key_exists('m', $_GET)?urldecode(trim($_GET['m'])):'';
+			$de = array_key_exists('d', $_GET)?urldecode(trim($_GET['d'])):'';
 
 			if(strcmp(substr($url,0,6), 'ftp://') != 0 && strcmp(substr($url,0,7), 'ftps://') != 0){
 				$url = 'ftp://'.$url;
@@ -72,7 +73,7 @@ error_reporting(6135);
 				$dl->pb->setError($l->t('Wrong URL'));
 			}
 			else{
-				$dl->getFile($url, '', $l, $ow, $kd, $mp);
+				$dl->getFile($url, $de, $l, $ow, $kd, $mp);
 			}
 		}
 		?>

@@ -97,7 +97,8 @@ function submit_form(){
 		type:'POST',
 		url:OC.linkTo('importer','ajax/updatePersonalSettings.php'),
 				dataType:'json',
-				data:$('form#importer').serialize(),
+//				data:$('form#importer').serialize(),
+				data:$('fieldset#importerPersonalSettings').serialize(),
 				async:false,
 				success:function(s){
 					if(s.length!=0){
@@ -227,6 +228,7 @@ $(document).ready(function(){
 			$(this).val('');
 		}
 	});*/
+	
 
 });
 

@@ -23,3 +23,8 @@
 	color: #ffffff;
 	font-weight: bold;
 }
+
+.choose_download_folder.btn{
+	padding: 8px 12px 6px;
+	margin: 4px 4px 6px;
+}

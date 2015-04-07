@@ -37,6 +37,7 @@ error_reporting(6135);
 		$ow = array_key_exists('o', $_GET)?urldecode(trim($_GET['o'])):'';
 		$kd = array_key_exists('k', $_GET)?urldecode(trim($_GET['k'])):'';
 		$mp = array_key_exists('m', $_GET)?urldecode(trim($_GET['m'])):'';
+		$de = array_key_exists('d', $_GET)?urldecode(trim($_GET['d'])):'';
 
 		if(strcmp(substr($url,0,7), 'http://') != 0 && strcmp(substr($url,0,8), 'https://') != 0){
 			$url = 'https://'.$url;
@@ -55,7 +56,7 @@ error_reporting(6135);
 				$dl->pb->setError($l->t('Unknown provider') . ": " . $pr);
 			}
 			else{
-				$dl->getFile($furl, '', $l, $ow, $kd, $mp, FALSE);
+				$dl->getFile($furl, $de, $l, $ow, $kd, $mp, FALSE);
 			}
 		}
 		?>
