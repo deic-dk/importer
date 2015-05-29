@@ -41,7 +41,7 @@ OCP\App::addNavigationEntry(Array(
 	'id' => 'importer_index',
 	'order' => 30,
 	'href' => OCP\Util::linkTo('importer', 'importer.php'),
-	'icon' => OCP\Util::imagePath('importer', 'importer.svg'),
+//	'icon' => OCP\Util::imagePath('importer', 'importer.svg'),
 	'name' => 'Importer'
 ));
 
