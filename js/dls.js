@@ -71,6 +71,7 @@ function remove_eltdelete(my_elt){
 		var first_elt = get_first_elt();
 		first_elt.find('.eltdelete').first().remove();
 	}
+	$('.tipsy').remove();
 }
 
 function addDownload(d, newurl, newprov, newpreserve){
@@ -107,8 +108,7 @@ function addDownload(d, newurl, newprov, newpreserve){
 		$(this).remove();
 	});
 	var aa = parseInt(elt_num+1);
-	$('#elt_'+aa+' select').chosen({disable_search_threshold: 10});
-	setProvidertitles('#elt_'+aa);
+	$('#elt_'+aa+' select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
 	if(d){
 		$('#elt_'+aa+' button.eltdelete').bind('click',function(){
 			remove_eltdelete($('#elt_'+aa));
@@ -117,16 +117,21 @@ function addDownload(d, newurl, newprov, newpreserve){
 	else{
 		$('#elt_'+aa+' button.eltdelete').remove();
 	}
+	$('.tipsy').remove();
+	setProvidertitles('#elt_'+aa);
 }
 
 function setProvidertitles(e){
 	$(e+' span.urlc').tipsy({gravity:'s',fade:true});
 	$(e+' span.load').tipsy({gravity:'s',fade:true});
-//	$(e+' button.addelt').tipsy({gravity:'s',fade:true});
-//	$(e+' button.eltdelete').tipsy({gravity:'s',fade:true});
+	$(e+' button.addelt').tipsy({gravity:'s',fade:true});
+	$(e+' button.eltdelete').tipsy({gravity:'s',fade:true});
 	$(e+' div.chzn-container').tipsy({gravity:'s',fade:true});
 	$(e+' select.chzen-select').change(function(){
 		$(e+' span.urlc').attr('title',t('importer','Type URL'));
+	});
+	$('a.chzn-single').bind('click',function(){
+		$('div.chzn-drop').css('top', '29px');
 	});
 	$(e+' .slider-frame').tipsy({gravity:'s',fade:true});
 	$(e+' .slider-frame .slider-button').toggle(
@@ -335,7 +340,7 @@ function addFirstDownload(v, myprov, mypreserve){
 		  mysel.find('select').toggle(true);
 		  mysel.find('select').removeClass('chzn-done');
 		  mysel.find('select').val(myprov);
-			mysel.find('select').chosen({disable_search_threshold: 10});
+			mysel.find('select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
 		  mysel.find("input.slider-check").attr("value", mypreserve?"1":"0");
 			mysel.find("input.slider-check").attr("checked", mypreserve);
 			var aa = parseInt(elt_num+1);
@@ -348,12 +353,12 @@ function addFirstDownload(v, myprov, mypreserve){
 				$("#elt_"+aa+" .slider-frame .slider-button").text("flat");
 			}
 			mysel.find('button.eltdelete').remove();
-		  return true;
+			return true;
 	}
   return false;
 }
 
-function saveList(file_name, urls){
+function doSaveList(file_name, urls){
 	$.ajax({
 		type:'POST',
 		url:OC.linkTo('importer','ajax/saveList.php'),
@@ -516,9 +521,37 @@ function loadFolderUrl(){
 	}
 }
 
-$(document).ready(function(){
+function saveList(){
+	var file_name = $("#save_pop .elts .urlc input").val().trim();
+	if( file_name==""){
+		$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Provide a file name!'));
+		return;
+	}
+	var urlList = {};
+	var i = 0;
+	$("#dllist div.elts").filter(':visible').each(function(el){
+		var urlLine = {};
+		urlLine['url'] = $(this).find('.urlc input.url').val().trim();
+		urlLine['preserve'] = $(this).find('input.slider-check').is(':checked');
+		urlLine['provider'] = $(this).find('select').val().trim();
+		if(urlLine['url']!=''){
+			urlList[i] = urlLine;
+		}
+		++i;
+	});
+	$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','loader.gif')+'" />');
+	doSaveList(file_name, JSON.stringify(urlList));
+	$('#chosen_file').text(file_name)
 
-	$('#elt_'+$('#dllist div.elts').size()+' select').chosen({disable_search_threshold: 10});
+}
+
+$(document).ready(function(){
+	
+	$('.btn').tipsy({gravity:'s', fade:true});
+	$('.urlc').tipsy({gravity:'s', fade:true});
+	$('#toggle_history').tipsy({gravity:'s', fade:true});
+
+	$('#elt_'+$('#dllist div.elts').size()+' select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
 	setProvidertitles('#elt_'+$('#dllist div.elts').size());
 
 	$("#geturl").button({text:true}).bind('click',function(){
@@ -582,25 +615,14 @@ $(document).ready(function(){
 	});
 
 	$("#save_pop .elts .urlc input").keypress(function(e) {
-		var file_name = $("#save_pop .elts .urlc input").val().trim();
-		if(e.which==13 && file_name!=""){
-			var urlList = {};
-			var i = 0;
-			$("#dllist div.elts").filter(':visible').each(function(el){
-				var urlLine = {};
-				urlLine['url'] = $(this).find('.urlc input.url').val().trim();
-				urlLine['preserve'] = $(this).find('input.slider-check').is(':checked');
-				urlLine['provider'] = $(this).find('select').val().trim();
-				if(urlLine['url']!=''){
-					urlList[i] = urlLine;
-			}
-			++i;
-		});
-				$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','loader.gif')+'" />');
-				saveList(file_name, JSON.stringify(urlList));
-				$('#chosen_file').text(file_name)
-	}
-});
+		if(e.which==13){
+			saveList();
+		}
+	});
+	
+	$("#save_list").bind('click', function(){
+		saveList();
+	});
 
 	mydialog0 = $("#dialog0").dialog({//create dialog, but keep it closed
 	  title: "Choose file",
@@ -624,8 +646,19 @@ $(document).ready(function(){
 	  mydialog0.load("/apps/chooser/").dialog("open");
 	});
 
-	$("#clearhistory").button({text:true}).bind('click',function(){
+	$("#clear_history").button({text:true}).bind('click',function(){
 	  updateHistory(1);
+	});
+	
+	$('#toggle_history').bind('click',function(){
+		if($('#toggle_history').hasClass('icon-angle-right')){
+			$('#toggle_history').removeClass('icon-angle-right').addClass('icon-angle-down');
+			$('#importer_history').show();
+		}
+		else{
+			$('#toggle_history').removeClass('icon-angle-down').addClass('icon-angle-right');
+			$('#importer_history').hide();
+		}
 	});
 
 	$("#getfolderurl").button({text:true}).bind('click',function(){
@@ -645,7 +678,7 @@ $(document).ready(function(){
             my: "right top",
             at: "right bottom"
 	  });
-		$("#folder_pop select").chosen({disable_search_threshold: 10});
+	  $("#folder_pop select").chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
 	  setProvidertitles("#folder_pop");
 	});
 
@@ -659,6 +692,7 @@ $(document).ready(function(){
 				remove_eltdelete(first_elt);
 			});
 		}
+		setProvidertitles("#"+$(this).parent().attr('id'));
 		$(this).remove();
 	});
 

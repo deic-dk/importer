@@ -51,8 +51,14 @@ OCP\Util::addStyle('importer', 'personalsettings');
 	</div>
 		<?php } ?>
 	<br />
-	Download folder:
-	<input type="text" id="importer_download_folder" name="importer_download_folder" value="<?php print(!is_null($_['us_download_folder'])?$_['us_download_folder']:''); ?>" placeholder="/"/>
+	Download folder:	
+	<input type="text" name="importer_download_folder" value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>" placeholder="/"/>
+	<label class="importer_choose_download_folder btn btn-flat">browse</label>
+	<div id="download_folder" style="visibility:hidden;display:none;"></div>
+	<div class="importer_folder_dialog" display="none">
+		<div class="loadFolderTree"></div>
+		<div class="file" style="visibility: hidden; display:inline;"></div>
+	</div>
 	<br />
 	<br />
 	<label id="importer_settings_submit" class="button">Save</label>&nbsp;<label id="importer_msg"></label>

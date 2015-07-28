@@ -97,7 +97,7 @@ function submit_form(){
 		type:'POST',
 		url:OC.linkTo('importer','ajax/updatePersonalSettings.php'),
 				dataType:'json',
-				data:$('form#importer').serialize(),
+				data:$('#importerPersonalSettings').serialize(),
 				async:false,
 				success:function(s){
 					if(s.length!=0){

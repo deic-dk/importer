@@ -37,6 +37,7 @@ if(!in_array('curl', get_loaded_extensions())){
 	
 	$tmpl->assign('user_prov_set', OC_importer::getProvidersList());
 	$tmpl->assign('user_history', OC_importer::getUserHistory($l));
+	$tmpl->assign('download_folder', OC_importer::getDownloadFolder());
 }
 
 $tmpl->printPage();

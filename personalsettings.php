@@ -25,6 +25,11 @@ OCP\JSON::checkAppEnabled('importer');
 OCP\User::checkLoggedIn();
 
 OCP\Util::addscript('importer', 'personalsettings');
+OCP\Util::addscript('importer', 'browse');
+
+OCP\Util::addStyle('chooser', 'jqueryFileTree');
+OCP\Util::addscript('chooser', 'jquery.easing.1.3');
+OCP\Util::addscript('chooser', 'jqueryFileTree');
 
 $errors = Array();
 

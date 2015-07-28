@@ -20,14 +20,12 @@
 * 
 */
 
-#controls .titleblock{font-size:13px;margin:0 0 0 0;}
-#controls .titleblock .titleleft{font-weight:bold;font-size:18px;float:left;margin:0 0 8px 5px;color:#555555;}
-#controls .titleblock .subtitle{font-size:15px;font-style:italic;color:#424242;margin-left:8px;}
-#controls .titleblock a{font-weight:bold;}
-#controls .titleblock .dlbtn{clear:left;float:left;margin:2px 5px 0 0;}
+.titleblock{min-width:720px;}
+.titleblock a{font-weight:bold;}
+.titleblock .dlbtn{clear:right;float:right;margin-top: 4px;}
 
-.dlbtn button#geturl{
-	margin:4px 0 0 40px;
+#content.app-importer {
+    margin-top: 30px;
 }
 
 div.dlbtn button.ui-button-text-only .ui-button-text {
@@ -44,8 +42,8 @@ div.dlbtn button.ui-button-text-only .ui-button-text {
 #importer{min-width:920px;margin:0.8em 0 0 0.3em;}
 #importer div.clear{clear:both;}
 #importer div.personalblock.bottomblock{margin-bottom:1em;}
-#importer div.personalblock{margin:1em 0.7em 0 0;padding:0.5em 1em;position:relative;background: none repeat scroll 0 0 #F8F8F8;border-radius:0.5em 0.5em 0.5em 0.5em;color:#555555;border:1px solid #DDDDDD;top: 0px !important;left: 0px !important;}
-#importer #folder_pop, #importer #save_pop{margin:1em 0.7em 0 0;position:relative;background: none repeat scroll 0 0 #F8F8F8;border-radius:0.5em 0.5em 0.5em 0.5em;color:#555555;border:1px solid #DDDDDD;top: 0px !important;left: 0px !important;}
+#importer div.personalblock{margin:1em 0.7em 0 0;padding:0.5em 1em;position:relative;background: none repeat scroll 0 0 #F8F8F8;border-radius:2px;color:#555555;border:1px solid #DDDDDD;top: 0px !important;left: 0px !important;}
+#importer #folder_pop, #importer #save_pop{margin:1em 0.7em 0 0;position:relative;background: none repeat scroll 0 0 #F8F8F8;border-radius:2px;color:#555555;border:1px solid #DDDDDD;top: 0px !important;left: 0px !important;}
 #importer div#folder_pop, #importer div#save_pop{background: none repeat scroll 0 0 #dddddd;}
 #importer div.personalblock.red{background-color: #FA5858;border:0 none;text-shadow:none;}
 #importer div#dllist div.elts{margin:10px 0 10px 0;}
@@ -56,13 +54,16 @@ div.dlbtn button.ui-button-text-only .ui-button-text {
 #folder_pop div.elts span.load button{margin:2px 2px 6px 2px;}
 #save_pop div.elts span.urlc input.url{width:260px;margin:4px 10px 0 5px;height:14px;}
 #importer div#dllist div.elts span.dling{float:right;padding:0.9em 0 0 0.8em;display:inline;position:absolute;width:100px;height:28px;font-size:0.75em;}
-div div.elts span.dling{float:right;padding:0.8em 0 0 0.8em;display:inline;position:absolute;width:200px;height:28px;font-size:0.75em;}
+#dllist div.elts span.dling{float:right;padding:0.8em 0 0 0.8em;display:inline;position:absolute;width:200px;height:28px;font-size:0.75em;}
 #importer div#dllist div.elts span.dling img, div div.elts span.dling img{padding:0 0 0 0;vertical-align:middle;}
 #importer div#dllist div.elts span.dling img.eltdelete, #folder_pop div.elts span.dling img.eltdelete{cursor:pointer;}
 #importer div#dllist div.elts span.dling iframe, #folder_pop div.elts span.dling iframe{float:right;width:100%;height:100%;}
-#importer div#dllist div.elts select.chzen-select{min-width:130px;}
-#folder_pop div.elts select.chzen-select{min-width:130px;}
-#importer div#dllist div.elts .chzn-container, div div.elts .chzn-container{float:left;padding:0.5em 0.5em 0 0;}
+#importer div#dllist div.elts select.chzen-select{min-width:110px;}
+#folder_pop div.elts select.chzen-select{min-width:110px;}
+#importer div#dllist div.elts .chzn-container, div div.elts .chzn-container{float:left;padding:0.5em 0.5em 0 0;min-width:115px;}
+div.chzn-container a.chzn-single{border-radius:2px;}
+div.chzn-container div.chzn-drop{border-radius:2px;}
+ul.chzn-results{margin:0;padding:0;}
 #importer div#dllist div.elts span.urlc, div div.elts span.urlc{padding:0 0;}
 #importer div#hiddentpl{display:none;}
 #importer div#divhisto table{width:100%;}
@@ -73,13 +74,16 @@ div div.elts span.dling{float:right;padding:0.8em 0 0 0.8em;display:inline;posit
 #importer div#divhisto table th.col2, #importer div#divhisto table td.col2{width:20%;border-right:1px solid #DDD;padding:4px 4px 0 0;}
 #importer div#divhisto table th.col3, #importer div#divhisto table td.col3{width:20%;padding:4px 4px 0 0;}
 div#folder_pop{position:relative;display:none;padding:0 0.6em 2.6em 0.6em;}
-div#save_pop{width:390px;height:38px;}
+div#save_pop{width:550px;height:38px;}
 div#save_pop{position:relative;display:none;}
-button#clearhistory{height:24px;font-size:10px;font-weight:normal;}
-button.addelt{height:26px;vertical-align:middle;padding: 2px 4px 4px 5px;;margin:0 0 2px 8px;}
-button.eltdelete{height:28px;vertical-align:middle;padding: 2px 4px 4px 5px;margin:0 0 2px 8px;}
+button#clear_history{height:24px;font-size:11px;font-weight:normal;clear:right;float:right;padding: 3px 8px 8px;}
+button#save_list{height:24px;font-size:11px;font-weight:normal;padding: 4px 8px 8px;margin: 0 6px 4px 2px;}
+button.addelt{height:26px;vertical-align:middle;padding: 2px 4px 4px 5px;;margin:0 0 4px 8px;}
+button.eltdelete{height:28px;vertical-align:middle;padding: 2px 4px 4px 5px;margin:0 0 4px 8px;}
 div#chosen_file{display:none;}
 .importer-delete{cursor:pointer;}
+#toggle_history{cursor:pointer;}
+
 
 /* from http://jsfiddle.net/skimberk1/TUPG7/ */
 .slider-frame {
@@ -104,8 +108,8 @@ div#chosen_file{display:none;}
 	border-right: 1px solid #333333;
 	border-bottom: 1px solid #666666;
 	border-left: 1px solid #333333;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
 	-webkit-box-shadow: inset 0px 1px 8px 0 rgba(0, 0, 0, 0.25);
 	-moz-box-shadow: inset 0px 1px 8px 0 rgba(0, 0, 0, 0.25);
 	box-shadow: inset 0px 1px 8px 0 rgba(0, 0, 0, 0.25);
@@ -118,8 +122,8 @@ div#chosen_file{display:none;}
 	height: 18px;
 	line-height: 18px;
 	background: #bbb;
-	-moz-border-radius: 5px;
-	border-radius: 3px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
 	border: 1px solid #70430e;
 	-webkit-transition: all 0.25s ease-in-out;
 	-moz-transition: all 0.25s ease-in-out;
@@ -146,8 +150,8 @@ div#chosen_file{display:none;}
 	height: 12px;
 	background: rgba(255, 255, 255, 0.25);
 	content: '';
-	-moz-border-radius: 15px;
-	border-radius: 15px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
 }
 .slider-check {
 	display:none;

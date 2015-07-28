@@ -26,24 +26,38 @@ OCP\Util::addScript('3rdparty','chosen/chosen.jquery.min');
 OCP\Util::addStyle('3rdparty','chosen/chosen');
 
 OCP\Util::addScript('importer', 'dls');
+OCP\Util::addScript('importer', 'browse');
+
+OCP\Util::addStyle('chooser', 'jqueryFileTree');
+OCP\Util::addscript('chooser', 'jquery.easing.1.3');
+OCP\Util::addscript('chooser', 'jqueryFileTree');
 
 ?>
 
-<div id="controls">
-	<div class="titleblock">
-		<span class="titleleft">Import data</span><span class="subtitle"><?php print($l->t('from external URLs to')."</span> <a href='/index.php/apps/files?dir=".OC_importer::getDownloadFolder()."'>".OC_importer::getDownloadFolder()."</a>") ?>
-		<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
-		  <div class="dlbtn">
-		    <button id="geturl"><?php print($l->t('Import all files')); ?></button>
-		    <button id="clearList"><?php print($l->t('Clear list')); ?></button>
-		    <button id="savelist"><?php print($l->t('Save list')); ?></button>
-		    <button id="chooselist"><?php print($l->t('Load list from file')); ?></button>
-		    <button id="getfolderurl"><?php print($l->t('List folder URL')); ?></button>
-		  </div>
-		  <div class='clear'></div>
-		<?php } ?>
-		<div class="clear"></div>
-	</div>
+<div class="titleblock">
+	<span>Import destination: </span>
+	<span class="urlc" title="Destination folder">
+		<input type="text" name="importer_download_folder" class="url"
+		value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>"
+		placeholder="folder" />
+		<label class="importer_choose_download_folder btn btn-flat">browse</label>
+		<div id="download_folder" style="visibility:hidden;display:none;"></div>
+		<div class="importer_folder_dialog" display="none">
+			<div class="loadFolderTree"></div>
+			<div class="file" style="visibility: hidden; display:inline;"></div>
+		</div>
+	</span>
+	<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
+  <span class="dlbtn">
+  	<button class="btn btn-primary btn-flat" id="geturl" title="Import all files"><?php print($l->t('Import')); ?></button>
+    <button class="btn btn-default btn-flat" id="clearList" title="Clear list of files"><?php print($l->t('Clear')); ?></button>
+    <button class="btn btn-default btn-flat" id="savelist" title="Save list to file"><?php print($l->t('Save')); ?></button>
+    <button class="btn btn-default btn-flat" id="chooselist" title="Load list from saved file"><?php print($l->t('Load')); ?></button>
+    <button class="btn btn-default btn-flat" id="getfolderurl" title="List remote directory"><?php print($l->t('Scan URL')); ?></button>
+  </span>
+  <div class='clear'></div>
+	<?php } ?>
+	<div class="clear"></div>
 </div>
 <div id='gallery' class="hascontrols"></div>
 <div id="importer">
@@ -64,7 +78,7 @@ OCP\Util::addScript('importer', 'dls');
 			<input id="folderurl" type="text" class="url" value="" placeholder="<?php print($l->t('Folder URL')); ?>" />
 		</span>
 		<span class="load" title="<?php print($l->t('List content of folder')); ?>">
-			<button id="loadFolder"><?php print($l->t('List folder')); ?></button>
+			<button id="loadFolder"><?php print($l->t('Scan')); ?></button>
 		</span>
 		<span class="dling"></span>
 	</div>
@@ -74,6 +88,7 @@ OCP\Util::addScript('importer', 'dls');
 	<div id="save_list" class="elts folder">
 		<span class="urlc" title="<?php print($l->t('Type name and hit enter to save')); ?>">
 			<input id="urllist" type="text" class="url" value="" placeholder="<?php print($l->t('File name')); ?>" />
+			<button id="save_list" class="btn btn-flat">Save</button>
 		</span>
 		<span class="dling"></span>
 	</div>
@@ -128,8 +143,10 @@ OCP\Util::addScript('importer', 'dls');
 	<?php } ?>
 	<div id="divhisto" class="personalblock">
 		<?php $status = Array($l->t('Unknown error'),$l->t('OK')); 
-		print($l->t('Download history')); ?>&nbsp;<button id="clearhistory" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><?php print($l->t('Clear')); ?></button>
-		<table border="0" cellpadding="0" cellspacing="0">
+		print($l->t('Download history')); ?>&nbsp;
+		<i id="toggle_history" class="icon-angle-right" title="Toggle history"></i>
+		<button id="clear_history" title="Clear import history" class="btn btn-flat ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><?php print($l->t('Clear')); ?></button>
+		<table id="importer_history" border="0" cellpadding="0" cellspacing="0" style="display:none;">
 			<thead>
 				<tr>
 					<th class="col1"><?php print($l->t('File')); ?></th>
