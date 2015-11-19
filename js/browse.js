@@ -23,10 +23,16 @@ $(document).ready(function(){
 
   choose_download_folder_dialog = $("div.importer_folder_dialog").dialog({//create dialog, but keep it closed
 	title: "Choose download folder",
-	autoOpen: false,
-	height: 440,
-	width: 620,
-	modal: true,
+	// autoOpen: false,
+	// height: 440,
+	// width: 620,
+	// modal: true,
+    dialogClass: "oc-dialog",
+    autoOpen: false,
+    resizeable: false,
+    draggable: false,
+    height: 600,
+    width: 720,
 	buttons: {
 	  "Choose": function() {
 		folder = stripTrailingSlash($('#download_folder').text());
