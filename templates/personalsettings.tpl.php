@@ -33,10 +33,13 @@ OCP\Util::addStyle('importer', 'personalsettings');
 	Credentials:
 	</div>
 	<br />
+	<!-- fake fields are a workaround for chrome autofill getting the wrong fields -->
+	<input style="display:none" type="text" name="fakeusernameremembered"/>
+	<input style="display:none" type="password" name="fakepasswordremembered"/>
 	<?php foreach($_['pr_list'] as $p){ ?>
 	<div class="importer_pr" id="importer_pr_<?php print($p['pr_id']); ?>">
 		<span style="float:left;width:100px;">
-			<label title="<?php print($p['pr_desc']); ?>"><?php print($p['pr_name']); ?></label>
+			<label title="<?php print(isset($p['pr_desc'])?$p['pr_desc']:''); ?>"><?php print($p['pr_name']); ?></label>
 		</span>
 		<input class="username" type="text" autocomplete="off" name="importer_pr_un_<?php print($p['pr_id']); ?>" id="importer_pr_un_<?php print($p['pr_id']); ?>" value="<?php print(!is_null($p['us_id'])?$p['us_username']:''); ?>" placeholder="Username" />
 

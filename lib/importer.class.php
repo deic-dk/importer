@@ -408,7 +408,7 @@ class OC_importer {
 		return $masterPw;
 	}
 	
-	public static function decryptPw($enc_pw, $master_pw){
+	public static function decryptPw($enc_pw, $master_pw=false){
 		$masterPw = $master_pw?$master_pw:self::getMasterPw();
 		$hashedMasterPw = md5($masterPw);
 		$ret = self::my_decrypt($enc_pw, $hashedMasterPw);

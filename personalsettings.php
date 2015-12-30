@@ -62,7 +62,7 @@ if(isset($_GET['importer']) && $_GET['importer'] == 1){
 	}
 }
 
-OC_Log::write('importer',"Cookie has value ".$_COOKIE['importerPw'], OC_Log::WARN);
+OC_Log::write('importer',"Cookie has value ".(isset($_COOKIE['importerPw'])?$_COOKIE['importerPw']:''), OC_Log::WARN);
 
 $ret = openssl_decrypt('dum', 'aes-128-cbc', 'test');
 OC_Log::write('importer',"Decryption test: ".$ret, OC_Log::WARN);
