@@ -32,14 +32,6 @@ div.dlbtn button.ui-button-text-only .ui-button-text {
 	padding: 4px;
 }
 
-.ui-dialog-titlebar.ui-widget-header.ui-corner-all.ui-helper-clearfix {
-	background: #fff;
-	border: none;
-	color: #444;
-	font-size:1.3em;
-	font-weight: bold;
-}
-
 #importer{min-width:920px;margin:0.8em 0 0 0.3em;}
 #importer div.clear{clear:both;}
 #importer div.personalblock.bottomblock{margin-bottom:1em;}
