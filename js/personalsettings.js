@@ -56,7 +56,11 @@ function store_master_pw(){
 
 function unlock_pw(){
 	var enc = input_field.parent().find(".enc").first().val();
+<<<<<<< HEAD
 	if(enc=="0" || enc=="1"){
+=======
+	// alert("enc: "+enc);
+>>>>>>> branch 'master' of https://github.com/deic-dk/importer.git
     //fix for auto popup open on some screens asking for Master password
     //Ashokaditya
 	if(enc=="0" || enc == "1"){
@@ -169,9 +173,13 @@ $(document).ready(function(){
 	});
 
 	$("#oc_pw_dialog input#importer_pw").keypress(function (e) {
+		//alert(e.which);
 		if(e.which==13){
 			pw_ok_func();
 		}
+		else{
+            $("body").dialog("close');
+        }
 	});
 
 	$("fieldset#importerPersonalSettings #importer_settings_submit").bind('click', function(){
