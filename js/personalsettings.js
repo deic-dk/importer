@@ -56,7 +56,10 @@ function store_master_pw(){
 
 function unlock_pw(){
 	var enc = input_field.parent().find(".enc").first().val();
-	if(enc=="0"){
+	if(enc=="0" || enc=="1"){
+    //fix for auto popup open on some screens asking for Master password
+    //Ashokaditya
+	if(enc=="0" || enc == "1"){
 		return;
 	}
 	if(pw_attempts>max_failed_pw_attemts){
@@ -85,7 +88,7 @@ function pw_ok_func(){
 	importer_pw = $('#importer_pw').val();
 	store_master_pw();
 	importer_pw = "";
-	mydialog1.dialog("close");
+	mydialog1.dialog('close');
 	if(submitting){
 		return;
 	}
@@ -114,7 +117,7 @@ function submit_form(){
 }
 
 $(document).ready(function(){
-	
+
 	$('.importer-delete').bind('click', function(){
 		$('#importer_pr_un_' + $(this).attr('rel')).val('');
 		$('#importer_pr_pw_' + $(this).attr('rel')).val('');
@@ -155,7 +158,7 @@ $(document).ready(function(){
 				pw_attempts = 0;
 				importer_pw = "";
 				importer_pw_ok = false;
-				mydialog1.dialog("close");
+				mydialog1.dialog('close');
 				if(!submitting){
 					input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
 					var orig_val = input_field.parent().find(".orig_enc_pw").first().val();
@@ -164,7 +167,7 @@ $(document).ready(function(){
 			}
 		}
 	});
-	
+
 	$("#oc_pw_dialog input#importer_pw").keypress(function (e) {
 		if(e.which==13){
 			pw_ok_func();
@@ -203,18 +206,18 @@ $(document).ready(function(){
 			});
 		}
 	});
-	
+
 	// Apparently none of this is working. Chrome autofills if one has a remembered password on the login page
 	/*if(navigator.userAgent.toLowerCase().indexOf('chrome') >= 0) {
 		setTimeout(function () {
 			document.getElementById('importer_pr_pw_1').autocomplete = 'off';
 		}, 1);
 	}
-	
+
 	$(':input').live('focus',function(){
 		$(this).attr('autocomplete', 'off');
 	});
-	
+
 	$('form#importer').attr('autocomplete', 'off');
 	$('.importer_pr input').attr('autocomplete', 'off');
 	$('.importer_pr input.username, .importer_pr input.password').each(function(el){
@@ -229,7 +232,4 @@ $(document).ready(function(){
 	});*/
 
 });
-
-
-
 
