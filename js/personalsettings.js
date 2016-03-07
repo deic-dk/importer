@@ -173,7 +173,7 @@ $(document).ready(function(){
 			pw_ok_func();
 		}
 		else{
-            $("body").dialog("close');
+            $("body").dialog('close');
         }
 	});
 
