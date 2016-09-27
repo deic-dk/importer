@@ -23,7 +23,7 @@ function decrypt_pw(enc_pw){
 				$(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
 			}
 			else{
-				alert(s.error);
+				alert('Could not decrypt password. '+s.error);
 				++pw_attempts;
 				importer_pw_ok = false;
 				unlock_pw();
