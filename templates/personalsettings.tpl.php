@@ -47,7 +47,7 @@ OCP\Util::addStyle('importer', 'personalsettings');
 		
 		<input type="checkbox" id="importer_pr_show_<?php print($p['pr_id']); ?>" class="personal-show" /><label for="importer_pr_show_<?php print($p['pr_id']); ?>"></label>
 		
-		<input type="hidden" id="importer_pr_orig_<?php print($p['pr_id']); ?>" name="importer_pr_enc_<?php print($p['pr_id']); ?>"  placeholder="Encrypted" class="orig_enc_pw" value="<?php print(!is_null($p['us_id'])?$p['us_password']:''); ?>" />
+		<input type="hidden" id="importer_pr_orig_<?php print($p['pr_id']); ?>" name="importer_pr_orig_<?php print($p['pr_id']); ?>"  placeholder="Encrypted" class="orig_enc_pw" value="<?php print(!is_null($p['us_id'])?$p['us_password']:''); ?>" />
 		<input type="hidden" id="importer_pr_enc_<?php print($p['pr_id']); ?>" name="importer_pr_enc_<?php print($p['pr_id']); ?>"  placeholder="Encrypted" class="enc" value="1" />
 		<?php print(!is_null($p['us_id'])?'<img class="importer-delete" src="' . OC_Helper::imagePath('importer', 'delete.png') . '" rel="' . $p['pr_id'] . '" title="'.$l->t('Clear').'" />':''); ?>
 		<?php print(!array_key_exists($p['pr_id'], $_['errors'])?'':'<label class="error">'.$_['errors'][$p['pr_id']].'</label>')?>

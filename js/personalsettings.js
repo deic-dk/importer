@@ -54,17 +54,15 @@ function store_master_pw(){
 	});
 }
 
+/**
+ * Unencrypt a single password input field (the one currently held in input_field).
+ */
 function unlock_pw(){
 	var enc = input_field.parent().find(".enc").first().val();
-	//fix for auto popup open on some screens asking for Master password
-	//Ashokaditya
-	if(enc=="0" || enc == "1"){
-		return;
-	}
 	if(pw_attempts>max_failed_pw_attemts){
-		$("form#importer :input").attr("disabled", true);
-		$("form#importer fieldset.personalblock #importer_settings_submit").unbind('click');
-		$("form#importer fieldset.personalblock #importer_settings_submit").css('cursor', 'default');
+		$("fieldset#importerPersonalSettings :input").attr("disabled", true);
+		$("fieldset#importerPersonalSettings #importer_settings_submit").unbind('click');
+		$("fieldset#importerPersonalSettings #importer_settings_submit").css('cursor', 'default');
 		$('.importer-delete').unbind('click');
 		$('.importer-delete').css('cursor', 'default');
 		alert("ERROR: could not unlock password.");
@@ -116,6 +114,18 @@ function submit_form(){
 }
 
 $(document).ready(function(){
+	
+	$("#importerPersonalSettings .importer_pr").each(function(ev){
+		var encPass = $(this).find("input.password").val();
+		if(encPass===""){
+			$(this).find("input.enc[type='hidden']").val("0");
+		}
+		else{
+			$(this).find("input.enc[type='hidden']").val("1");
+		}
+		// FF remembers if checkboxes are checked on reload. Just clear them all.
+		$(this).find("input.personal-show[type='checkbox']").first().attr("checked", false);
+		});
 
 	$('.importer-delete').bind('click', function(){
 		$('#importer_pr_un_' + $(this).attr('rel')).val('');
@@ -126,8 +136,7 @@ $(document).ready(function(){
 
 	$("fieldset#importerPersonalSettings div.importer_pr").each(function(el){
 		var encVal;
-		$(this).find("input[type='password']").each(function(el){
-			$(this).showPassword();
+		$(this).find("input.password").each(function(el){
 			encVal = $(this).val();
 			$(this).on('input', function() {
 				input_field = $(this);
@@ -136,7 +145,9 @@ $(document).ready(function(){
 				}
 			});
 			$(this).parent().find("input.personal-show[type='checkbox']").first().bind('click', function() {
-				input_field = $(this).parent().find("input.password[type='text']").first();
+				input_field = $(this).parent().find("input.password").first();
+				var inputType = input_field.attr('type');
+				input_field.attr('type', inputType=='password'?'text':'password');
 				if(!importer_pw_ok || encVal!=''){
 					unlock_pw();
 				}
@@ -178,24 +189,7 @@ $(document).ready(function(){
 	});
 
 	$("fieldset#importerPersonalSettings #importer_settings_submit").bind('click', function(){
-		// Get the clear-text password cloned into the password field which is actually submmitted.
-		$("input.personal-show[type='checkbox']").each(function(el){
-			if($(this).is(':checked')){
-				$(this).parent().find("input.password[type='password']").first().val($(this).parent().find("input.password[type='text']").first().val());
-			}
-		});
-		var ok = true;
-		$("form#importer fieldset.personalblock div.importer_pr").each(function(el){
-			var encVal;
-			$(this).find("input[type='password']").each(function(el){
-				encVal = $(this).val();
-				if(typeof encVal != 'undefined' && encVal.trim()!=""){
-					ok = false;
-					return;
-				}
-			});
-		});
-		if(ok || importer_pw_ok){
+		if(importer_pw_ok){
 			submit_form();
 		}
 		else{
@@ -209,30 +203,6 @@ $(document).ready(function(){
 			});
 		}
 	});
-
-	// Apparently none of this is working. Chrome autofills if one has a remembered password on the login page
-	/*if(navigator.userAgent.toLowerCase().indexOf('chrome') >= 0) {
-		setTimeout(function () {
-			document.getElementById('importer_pr_pw_1').autocomplete = 'off';
-		}, 1);
-	}
-
-	$(':input').live('focus',function(){
-		$(this).attr('autocomplete', 'off');
-	});
-
-	$('form#importer').attr('autocomplete', 'off');
-	$('.importer_pr input').attr('autocomplete', 'off');
-	$('.importer_pr input.username, .importer_pr input.password').each(function(el){
-		if($(this).attr('type')=='password' && (typeof $(this).val() == typeof undefined || $(this).val() == false || $(this).val()=='')){
-			//alert($(this).attr('autocomplete'));
-			$(this).attr('autocomplete','off');
-			$(this).attr('type', 'text');
-			$(this).val('');
-			$(this).attr('type', 'password');
-			$(this).val('');
-		}
-	});*/
 
 });
 
