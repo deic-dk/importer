@@ -30,6 +30,7 @@ var decrypting = false;
 var decrypt_error = false;
 var mydialog1;
 var folder_prov = '';
+var get_el = null;
 
 function get_first_elt(){
 	return $('#dllist .elts').first();
@@ -145,7 +146,8 @@ function setProvidertitles(e){
 	});
 }
 
-function getProvider(msg){
+function getProvider(el){
+	get_el = null;
 	$(window).bind('beforeunload', function(){
 		return false;
 	});
@@ -155,10 +157,10 @@ function getProvider(msg){
 		return;
 	};
 
-	var p = msg.find('select.chzen-select').val();
-	var u = msg.find('input.url').val();
+	var p = el.find('select.chzen-select').val();
+	var u = el.find('input.url').val();
 	if(p==0){
-	  msg.find('select.chzen-select option').each(function(el){
+		el.find('select.chzen-select option').each(function(el){
 	    if($(this).text().toLowerCase()==u.replace(/^(\w+):\/\/.*$/, "$1").toLowerCase() ||
 				$(this).text().toLowerCase()==u.replace(/https:\/\//, "http://").replace(/^(\w+):\/\/.*$/, "$1").toLowerCase()
 			){
@@ -167,11 +169,11 @@ function getProvider(msg){
 	  });
 	}
 	if(p==0){
-		msg.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Select a provider!'));
+		el.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Select a provider!'));
 	}
 	else{
 		if(u.length==0){
-			msg.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Provide a file URL!'));
+			el.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Provide a file URL!'));
 		}
 		else{
 			$.ajax({
@@ -182,26 +184,38 @@ function getProvider(msg){
 				async:false,
 				success:function(s){
 					if(s.e){
-						msg.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer', 'Provider does not exist!'));
+						el.find('span.dling').html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer', 'Provider does not exist!'));
 					}
 					else{
 						if(s.a && !importer_pw_ok){
 							decrypting = true;
 							// Get username/password for the provider
-							checkMasterPw();
+							var checkUrl = el.find('input.url').val();
+							var checkProvider = el.find('select').val();
+							if(checkProvider==0){
+								checkProvider = '';
+							}
+							checkMasterPw(checkUrl, checkProvider);
 							if(!importer_pw_ok){
 								folder_prov = '';
+								get_el = el;
 								$("#oc_pw_dialog").dialog('open');
 								return;
 							}
 						}
-						msg.removeClass('new');
-						msg.find('span.dling').html('<iframe></iframe>');
-						var iframe = msg.find('iframe');
+						el.removeClass('new');
+						el.find('span.dling').html('<iframe></iframe>');
+						var iframe = el.find('iframe');
+						var dlFolder = $('input[name=importer_download_folder]').val();
+						var group = $('#user_groups_move_select').val();
+						if(group=='home'){
+							group = '';
+						}
 						// Do the actual download
-						var iframeUri = OC.linkTo('importer','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(msg.find('input.slider-check').attr("checked")?1:0)+'&o=1');
+						var iframeUri = OC.linkTo('importer','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(el.find('input.slider-check').attr("checked")?1:0)+
+								'&o=1'+'&d='+dlFolder+'&g='+group);
 						iframe.load(function(){
-							var n_str = msg.attr('id').replace('elt_','');
+							var n_str = el.attr('id').replace('elt_','');
 							var new_n = parseInt(n_str)+1;
 							var new_n_str = '#elt_'+new_n;
 							if($(new_n_str).length!=0){
@@ -212,13 +226,13 @@ function getProvider(msg){
 							}
 							if(iframe[0].contentWindow.getPbPercentDone()==100){
 								var first_id = get_first_id();
-								if(msg.attr('id')==first_id){
-									msg.find('span.urlc input.url').val('');
-									msg.find('span.dling').html('');
-									msg.addClass('new');
+								if(el.attr('id')==first_id){
+									el.find('span.urlc input.url').val('');
+									el.find('span.dling').html('');
+									el.addClass('new');
 								}
 								else{
-									msg.remove();
+									el.remove();
 								}
 								updateHistory();
 							}
@@ -231,18 +245,20 @@ function getProvider(msg){
 	}
 }
 
-function checkMasterPw(){
-	
+function checkMasterPw(url, provider){
 	$.ajax({
 		type:'POST',
 		url:OC.linkTo('importer','ajax/getUserProviderInfoRaw.php'),
 				dataType:'json',
-				data:{url:$("#folderurl").val(), provider:folder_prov},
+				data:{url:url, provider, provider:provider},
 				async:false,
 				success:function(s){
 					decrypting = false;
 					if(typeof s.us_password === 'undefined' || s.us_password.trim()==''){
 						importer_pw_ok = true;
+					}
+					if(s.error){
+						alert(s.error);
 					}
 				},
 				error:function(){
@@ -296,12 +312,12 @@ function updateHistory(clear){
 }
 
 function lsDir(url, provider){
-	$.ajax({
+	var xhr = $.ajax({
 		type:'POST',
 		url:OC.linkTo('importer','ajax/lsDir.php'),
 		dataType:'json',
 		data:{url:url, provider:provider},
-		async:false,
+		async:true,
 		success:function(urls){
 			if(urls.error){
 				$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+urls.error);
@@ -329,6 +345,7 @@ function lsDir(url, provider){
 	    $("#savelist").removeAttr("disabled");
 	  }
 	}
+	return xhr;
 }
 
 function addFirstDownload(v, myprov, mypreserve){
@@ -456,6 +473,9 @@ function pw_ok_func(){
 			lsDir($("#folderurl").val(), folder_prov);
 			folder_prov = '';
 		}
+		else if(get_el!=null){
+			getProvider(get_el);
+		}
 	}
 	else{
 		decrypt_error = true;
@@ -463,7 +483,7 @@ function pw_ok_func(){
 	}
 }
 
-function checkProviderAuth(provider){
+function checkProviderAuthForLs(provider){
 	$.ajax({
 		type:'POST',
 		url:OC.linkTo('importer','ajax/getProvider.php'),
@@ -478,7 +498,7 @@ function checkProviderAuth(provider){
 				if(s.a && !importer_pw_ok){
 					decrypting = true;
 					// Get username/password for the provider
-					checkMasterPw();
+					checkMasterPw($("#folderurl").val(), folder_prov);
 					if(!importer_pw_ok){
 						$("#oc_pw_dialog").dialog('open');
 					}
@@ -492,9 +512,10 @@ function checkProviderAuth(provider){
 }
 
 function loadFolderUrl(){
-	$("#folder_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','loader.gif')+'" />');
+	$("#folder_pop .elts span.dling").html('<img id="folder_loading" src="'+OC.imagePath('importer','loader.gif')+'" />');
 	myurl = $("#folderurl").val();
 	var myprov = $("#elt_0 select").val();
+	var xhr;
 	if(myprov==0){
 		$('#elt_0 select.chzen-select option').each(function(el){
 			if($(this).text().toLowerCase()==myurl.replace(/^(\w+):\/\/.*$/, "$1").toLowerCase() ||
@@ -502,23 +523,27 @@ function loadFolderUrl(){
 					myprov = $(this).val();
 					folder_prov = myprov;
 					if(!importer_pw_ok){
-						checkProviderAuth(myprov);
+						checkProviderAuthForLs(myprov);
 					}
 				}
 		});
 		if(importer_pw_ok || myprov===0){
-			lsDir(myurl, myprov);
+			xhr = lsDir(myurl, myprov);
 		}
 	}
 	else{
 		if(!importer_pw_ok){
 			folder_prov = myprov;
-			checkProviderAuth(myprov);
+			checkProviderAuthForLs(myprov);
 		}
 		else{
-			lsDir(myurl, myprov);
+			xhr = lsDir(myurl, myprov);
 		}
 	}
+	$('#folder_loading').click(function(el){
+		xhr.abort();
+		$("#folder_pop .elts span.dling").html('');
+	});
 }
 
 function saveList(){
@@ -746,6 +771,37 @@ $(document).ready(function(){
 	function(){
 	 $(this).removeClass('on').html('flat').parent().next('input[type="checkbox"]').removeAttr('checked');
 	 $(this).parent().next('input[type="checkbox"]').attr('value', '0');
+	});
+ 
+ // Fill group dropdown
+	var group = null;
+	if(typeof OCA.Files!== 'undefined' && typeof OCA.Files.App.fileList.getGroup!=='undefined'){
+		group = OCA.Files.App.fileList.getGroup();
+	}
+
+	$.ajax({
+		url: OC.filePath('user_group_admin', 'ajax', 'groups.php'),
+		async: false,
+		success: function(response) {
+			if(response){
+				var bookmarks = '';
+				$.each( response, function(key,value) {
+					$('#user_groups_move_select').append('<option value="'+value.gid+'">'+value.gid+'</option>');
+				});
+				if(group && group!=null){
+					$('#user_groups_move_select').val(group);
+				}
+				else{
+					$('#user_groups_move_select option').filter(function() { 
+						return ($(this).text() == 'Home' && $(this).val() == 'home');
+				}).prop('selected', true); 
+				}
+			}
+			$('#user_groups_move_select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
+			$('#user_groups_move_select').change(function(ev){
+				$('input[name=importer_download_folder]').val('/');
+			});
+		}
 	});
 
 });

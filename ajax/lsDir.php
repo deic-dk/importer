@@ -80,8 +80,9 @@ $out = array();
 
 require_once('importer/lib/importer'.$myprovider.'.class.php');
 $myprovider = 'OC_importer'.$myprovider;
+$dl = new $myprovider(false, null);
 try{
-	$out = $myprovider::lsDir($folderurl, $user_info);
+	$out = $dl->lsDir($folderurl, $user_info);
 }
 catch(Exception $e){
 	$k['error'] = $e->getMessage();

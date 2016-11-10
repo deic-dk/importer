@@ -7,6 +7,8 @@ require_once('importer/lib/importerPB.class.php');
 OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
+OCP\Util::addScript('importer', 'pb');
+
 $l = new OC_L10N('importer');
 
 set_time_limit(0);
@@ -23,10 +25,23 @@ error_reporting(6135);
 		<style type="text/css">
 			body{color:#555;font:0.6em "Lucida Grande",Arial,Verdana,sans-serif;font-weight:normal;text-shadow:0 1px 0 #FFF;margin:0 1px 0 0;overflow:hidden;}
 		</style>
+		<script type="text/javascript" src="/core/js/jquery-1.10.0.min.js"></script>
+		<script type="text/javascript" src="/apps/importer/js/pb.js"></script>
 	</head>
 	<body>
 		<?php
-		$dl = new OC_importerS3();
+		$group = array_key_exists('g', $_GET)?urldecode(trim($_GET['g'])):'';
+		if(OCP\App::isEnabled('user_group_admin') && !empty($group)){
+			// Allow ingesting to group folders
+			$user = \OC_User::getUser();
+			\OC\Files\Filesystem::tearDown();
+			$groupDir = '/'.$user.'/user_group_admin/'.$group;
+			\OC\Files\Filesystem::init($user, $groupDir);
+			$dl = new OC_importerS3(false, $groupDir);
+		}
+		else{
+			$dl = new OC_importerS3();
+		}
 		echo '<div style="width:99%;">';
 		$dl->pb->render();
 		echo '</div>';
@@ -37,7 +52,9 @@ error_reporting(6135);
 		$ow = array_key_exists('o', $_GET)?urldecode(trim($_GET['o'])):'';
 		$kd = array_key_exists('k', $_GET)?urldecode(trim($_GET['k'])):'';
 		$mp = array_key_exists('m', $_GET)?urldecode(trim($_GET['m'])):'';
-
+		$dir = array_key_exists('d', $_GET)?urldecode(trim($_GET['d'])):'';
+		$group = array_key_exists('g', $_GET)?urldecode(trim($_GET['g'])):'';
+		
 		if(strcmp(substr($url,0,5), 's3://') != 0 && strcmp(substr($url,0,6), 'sss://') != 0){
 			$url = 's3://'.$url;
 		}
@@ -55,7 +72,7 @@ error_reporting(6135);
 				$dl->pb->setError($l->t('Unknown provider') . ": " . $pr);
 			}
 			else{
-				$dl->getFile($furl, '', $l, $ow, $kd, $mp);
+				$dl->getFile($furl, $dir, $l, $ow, $kd, $mp, false);
 			}
 		}
 		?>

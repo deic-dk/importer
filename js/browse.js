@@ -47,6 +47,10 @@ $(document).ready(function(){
 	choose_download_folder_dialog.dialog('open');
 	choose_download_folder_dialog.show();
 	folder = stripLeadingSlash($('[name=importer_download_folder]').val());
+	group = $('#user_groups_move_select').val();
+	if(group=='home'){
+		group = '';
+	}
 	$('.importer_folder_dialog div.loadFolderTree').fileTree({
 	  //root: '/',
 	  script: '../../apps/chooser/jqueryFileTree.php',
@@ -54,7 +58,8 @@ $(document).ready(function(){
 	  selectFile: false,
 	  selectFolder: true,
 	  folder: folder,
-	  file: ''
+	  file: '',
+	  group: group
 	},
 	// single-click
 	function(file) {

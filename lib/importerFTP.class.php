@@ -27,6 +27,7 @@
  */
  
 require_once('files/cache/updater.php');
+require_once('importer/lib/importerPB.class.php');
 
 class OC_importerFTP {
 	
@@ -34,11 +35,20 @@ class OC_importerFTP {
 	public $pb;
 	private $batch;
 	
-	function __construct($b = false) {
+	function __construct($b = false, $filesDir = null) {
 		$this->batch = $b;
-		$this->pb = new OC_importerPB();
+		if(!$this->batch){
+			require_once('importerPB.class.php');
+			$this->pb = new OC_importerPB();
+		}
+		if(empty($filesDir)){
+			$this->filesDir = '/'.\OCP\USER::getUser().'/files';
+		}
+		else{
+			$this->filesDir = $filesDir;
+		}
 	}
-   
+
 	function __destruct() {
   }
 	
@@ -101,7 +111,7 @@ class OC_importerFTP {
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
-	public static function lsDir($folderurl, $user_info){
+	public function lsDir($folderurl, $user_info){
 		// wget -r ftp://ftp@ftp.funet.fi/pub/mirrors/mirror.cs.wisc.edu/pub/mirrors/ghost/contrib/
 		// Unfortunately this does not work with all servers - notably not ftp://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/data/HG00096/
     //$cmd = "/usr/local/bin/ncftpls -gg ".$user_str." ".$password_str." ".$folderurl." | grep -v '/$' | sed 's|@$||' | sed 's|^|".$folderurl."|'";
@@ -131,8 +141,10 @@ class OC_importerFTP {
 	 * @param $overwrite Overwrite the target file
 	 * @param $preserveDir Keep remote directory structure
 	 * @param $masterpw Master password for the key store
+	 * @param $verbose
 	 */
-	public function getFile($rurl, $dir, $l, $overwrite = false, $preserveDir = false, $masterpw = NULL){
+	public function getFile($rurl, $dir, $l, $overwrite = false, $preserveDir = false,
+			$masterpw = NULL, $verbose = false){
 		try{
 		
 			$user = "";
@@ -170,12 +182,13 @@ class OC_importerFTP {
 			}
 			OC_Log::write('importer','Size: '.$size, OC_Log::WARN);
 			
-			$fs = OCP\Files::getStorage('files');
+			//$fs = OCP\Files::getStorage();
+			OC_Log::write('importer',"Downloading to ".$this->filesDir, OC_Log::WARN);
+			$fs = new \OC\Files\View($this->filesDir);
 			
-			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
-			
-			$parsed_url = parse_url($url);
-			$rpathinfo = pathinfo($parsed_url['path']);
+			$dl_dir = empty($dir)?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
+						
+			$rpathinfo = pathinfo($url['path']);
 			$filename = $rpathinfo['basename'];
 
 			if($preserveDir){
@@ -195,7 +208,6 @@ class OC_importerFTP {
 				}
 			}
 
-			$pathinfo = pathinfo($path);
 			if($fs->file_exists($dl_dir . "/" . $filename) && !$overwrite){
 				$filename = md5(rand()) . '_' . $filename;
 			}
@@ -218,7 +230,7 @@ class OC_importerFTP {
 						$this->pb->setProgressBarProgress($percent);
 					}
 					else{
-						print($percent."%\n");
+						$verbose && print($percent."%\n");
 					}
 					$last = $received;
 				}
@@ -235,10 +247,12 @@ class OC_importerFTP {
 			else{
 				if(!$this->batch){
 					$this->pb->setProgressBarProgress(100);
-					OC_importer::setUserHistory($url, 1);
+					OC_importer::setUserHistory($rurl, 1);
+					OC_Log::write('importer','Finished FTP download of '.$rurl.' Size: '.$size.
+						" bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s", OC_Log::WARN);
 				}
 				else{
-				print("Done (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s)\n");
+					$verbose && print("Done (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s)\n");
 				}
 			}
 		}

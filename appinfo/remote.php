@@ -38,61 +38,64 @@
 
 // curl -k -L --request GET "https://10.2.0.254/remote.php/ingest/?provider=S3&password=test&url=s3://aws-publicdatasets/common-crawl/crawl-002/2010/01/06/0/1262850367358_0.arc.gz"
 
-require_once('apps/chooser/lib/lib_chooser.php');
+OCP\JSON::checkAppEnabled('chooser');
+require_once('chooser/lib/lib_chooser.php');
+require_once('chooser/lib/ip_auth.php');
+require_once('chooser/lib/nbf_auth.php');
 
-//$baseuri = OC_App::getAppWebPath('importer').'appinfo/remote.php';
-$baseuri = "/remote.php/ingest";
-$path = substr(OCP\Util::getRequestUri(), strlen($baseuri));
+$ok = false;
 
-// load needed apps
-$RUNTIME_APPTYPES=array('filesystem', 'authentication', 'logging');
-OC_App::loadApps($RUNTIME_APPTYPES);
-OC_Util::obEnd();
-
-$lockBackend = new OC_Connector_Sabre_Locks();
-$requestBackend = new OC_Connector_Sabre_Request();
-$publicDir = new OC_Connector_Sabre_Directory('');
-$server = new Sabre_DAV_Server($publicDir);
-
-$user_id = OC_Chooser::checkIP();
-if($user_id){
-  require_once 'chooser/lib/ip_auth.php';
-	OC_Log::write('importer','user_id '.$user_id,OC_Log::WARN);
-	if($user_id != '' && OC_User::userExists($user_id)){
-		$_SESSION['user_id'] = $user_id;
-		\OC_Util::setupFS();
-	}
-	$authBackend = new OC_Connector_Sabre_Auth_ip_auth();
-}
-else{
-	$authBackend = new OC_Connector_Sabre_Auth();
+if(!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])){
+	$authBackendNBF = new OC_Connector_Sabre_Auth_NBF();
+	$ok = $authBackendNBF->checkUserPass($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
 }
 
-$authPlugin = new Sabre_DAV_Auth_Plugin($authBackend,'ownCloud');//should use $validTokens here
-$server->addPlugin($authPlugin);
-
-$server->httpRequest = $requestBackend;
-$server->setBaseUri($baseuri.$path);
-
-
-$server->addPlugin( new Sabre_DAV_Locks_Plugin($lockBackend));
-$server->addPlugin(new Sabre_DAV_Browser_Plugin(false)); // Show something in the Browser, but no upload
-$server->addPlugin(new OC_Connector_Sabre_QuotaPlugin());
-$server->addPlugin(new OC_Connector_Sabre_MaintenancePlugin());
-
-$authBackend->authenticate($server, 'ownCloud');
-$user = $authPlugin->getCurrentUser();
-
-OC_Log::write('importer',"USER: ".OC_User::getUser()." : ".$user,OC_Log::WARN);
-
-//$server->exec();
-
-if($user==null || trim($user)==''){
-  exit -1;
+if(!$ok){
+	$authBackendIP = new Sabre\DAV\Auth\Backend\IP();
+	$ok = $authBackendIP->checkUserPass($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
 }
 
+OCP\JSON::checkLoggedIn();
+
+$userServerAccess = \OCA\FilesSharding\Lib::getUserServerAccess();
+// Block all access if account is locked on server
+if($ok && \OCP\App::isEnabled('files_sharding') &&
+		$userServerAccess!=\OCA\FilesSharding\Lib::$USER_ACCESS_ALL){
+	$ok = false;
+}
+
+// Block write operations on r/o server
+if($ok && \OCP\App::isEnabled('files_sharding') &&
+		$userServerAccess==\OCA\FilesSharding\Lib::$USER_ACCESS_READ_ONLY &&
+		(strtolower($_SERVER['REQUEST_METHOD'])=='mkcol' || strtolower($_SERVER['REQUEST_METHOD'])=='put' ||
+				strtolower($_SERVER['REQUEST_METHOD'])=='move' || strtolower($_SERVER['REQUEST_METHOD'])=='delete' ||
+				strtolower($_SERVER['REQUEST_METHOD'])=='proppatch')){
+	$ok = false;
+}
+
+\OCP\Util::writeLog('importer', 'User '.$_SERVER['PHP_AUTH_USER']." --> ".$ok, \OC_Log::WARN);
+
+if(!$ok){
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden');
+	exit();
+}
+
+$user = OCP\USER::getUser();
+$group = isset($_GET['group']) ? $_GET['group'] : '';
+if(!empty($group) && !empty($user)){
+	$filesDir = '/'.$user.'/user_group_admin/'.$group;
+	OC_Log::write('importer','Non-files access: '.$filesDir, OC_Log::WARN);
+	\OC\Files\Filesystem::tearDown();
+	\OC\Files\Filesystem::init($user, $filesDir);
+}
+elseif(!empty($user)){
+	$filesDir = '/'.$user.'/files';
+	\OC\Files\Filesystem::init($user, $filesDir);
+}
 
 ///////////////////////////////
+
+require_once('apps/chooser/appinfo/apache_note_user.php');
 
 header("Content-Type: application/json");
 
@@ -110,6 +113,6 @@ $parsed_url = parse_url($url);
 $pathinfo = pathinfo($parsed_url['path']);
 $myprovider = 'OC_importer'.$provider;
 $l = new OC_L10N('importer');
-$dl = new $myprovider(TRUE);
+$dl = new $myprovider(TRUE, $filesDir);
 $dl->getFile($url, $dest_dir, $l, $overwrite, $preserve, $masterpw, $verbose);
 

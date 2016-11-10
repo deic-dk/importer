@@ -50,8 +50,15 @@ OCP\App::registerAdmin('importer', 'settings');
 
 $dl_dir = OC_importer::getDownloadFolder();
 
-if(OCP\User::getUser() && strlen($dl_dir) != 0){
-	$fs = OCP\Files::getStorage('files');
+if($user=OCP\User::getUser() && strlen($dl_dir) != 0){
+	//$fs = OCP\Files::getStorage('files');
+	if(!empty($group)){
+		$filesDir = '/'.$user.'/user_group_admin/'.$group;
+	}
+	else{
+		$filesDir = '/'.$user.'/files';
+	}
+	$fs = new \OC\Files\View($filesDir);
 	if(!$fs){
 		return;
 	}

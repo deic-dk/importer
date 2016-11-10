@@ -22,11 +22,20 @@ class OC_importerS3 {
 	private $client;
 	private $batch;
 	
-	function __construct($b = false) {
+	function __construct($b = false, $filesDir = null) {
 		$this->batch = $b;
-		$this->pb = new OC_importerPB();
+		if(!$this->batch){
+			require_once('importerPB.class.php');
+			$this->pb = new OC_importerPB();
+		}
+			if(empty($filesDir)){
+			$this->filesDir = '/'.\OCP\USER::getUser().'/files';
+		}
+		else{
+			$this->filesDir = $filesDir;
+		}
 	}
-   
+
 	function __destruct() {
   }
 	
@@ -58,7 +67,7 @@ class OC_importerS3 {
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
-	public static function lsDir($url){
+	public function lsDir($url){
 		$user = "";
 		$pass = "";
 		$user_info = OC_importer::getUserProviderInfo('S3');
@@ -103,8 +112,10 @@ class OC_importerS3 {
 	 * @param $overwrite Overwrite the target file
 	 * @param $preserveDir Keep remote directory structure
 	 * @param $masterpw Master password for the key store
+	 * @param $verbose
 	 */
-	public function getFile($url, $dir, $l, $overwrite = false, $preserveDir = false, $masterpw = NULL){
+	public function getFile($url, $dir, $l, $overwrite = false, $preserveDir = false, $masterpw = NULL,
+			$verbose=false){
 		try{
 		
 			$user = "";
@@ -138,7 +149,8 @@ class OC_importerS3 {
 			}
 			OC_Log::write('importer','Size: '.$size, OC_Log::WARN);
 			
-			$fs = OCP\Files::getStorage('files');
+			//$fs = OCP\Files::getStorage();
+			$fs = new \OC\Files\View($this->filesDir);
 			
 			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
 			
@@ -163,7 +175,6 @@ class OC_importerS3 {
 				}
 			}
 
-			$pathinfo = pathinfo($path);
 			$local_file = $dl_dir . "/" . $filename;
 			if($fs->file_exists($local_file)){
 				if(!$overwrite){
@@ -204,7 +215,7 @@ class OC_importerS3 {
 					$this->pb->setProgressBarProgress($percent);
 				}
 				else{
-					print($percent."%\n");
+					$verbose && print($percent."%\n");
 					flush();
 				}
 				if($received == $size){
@@ -222,7 +233,7 @@ class OC_importerS3 {
 				OC_importer::setUserHistory($url, 1);
 			}
 			else{
-				print("Done (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s)\n");
+				$verbose && print("Done (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s)\n");
 			}
 		}
 		catch(exception $e){

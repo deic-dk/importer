@@ -33,29 +33,36 @@ class OC_importerHTTP {
 	protected $batch;
 	protected static $USER_AGENT = 'curl/7.21.2 (i386-pc-win32) libcurl/7.21.2 OpenSSL/0.9.8o zlib/1.2.5';
 	protected static $PROVIDER_NAME = 'HTTP';
+	protected $filesDir;
 	
-	function __construct($b = FALSE) {
+	function __construct($b = FALSE, $filesDir = null) {
 		$this->batch = $b;
 		OC_Log::write('importer',"Batch: ".$this->batch, OC_Log::WARN);
 		if(!$this->batch){
+			require_once('importerPB.class.php');
 			$this->pb = new OC_importerPB();
 		}
-  }
-   
+		if(empty($filesDir)){
+			$this->filesDir = '/'.\OCP\USER::getUser().'/files';
+		}
+		else{
+			$this->filesDir = $filesDir;
+		}
+	}
+
 	function __destruct() {
   }
-   
 
-	protected static function getStorage() {
+	protected static function getStorage($filesDir = 'files') {
 		$user = OC_User::getUser();
 		$view = new \OC\Files\View('/'.$user);
 		if(!$view){
 			return null;
 		}
-		if(!$view->file_exists('files')) {
-			$view->mkdir('files');
+		if(!$view->file_exists($filesDir)) {
+			$view->mkdir($filesDir);
 		}
-		return new \OC\Files\View('/'.$user.'/'.'files');
+		return new \OC\Files\View('/'.$user.'/'.$filesDir);
 	}
 
 	/**
@@ -65,7 +72,7 @@ class OC_importerHTTP {
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
-	public static function lsDir($folderurl, $user_info){
+	public function lsDir($folderurl, $user_info){
 	
 		// wget -r -nH --cut-dirs=$dirs --no-parent --reject="index.html*" -e robots=off --server-response http://ftp.funet.fi/pub/mirrors/mirror.cs.wisc.edu/pub/mirrors/ghost/contrib/
 
@@ -97,7 +104,7 @@ class OC_importerHTTP {
 		return $out;
 	}
 
-	protected static function getAuthHeader($user_info){
+	protected function getAuthHeader($user_info){
 		$b64 = base64_encode($user_info['us_username'].":".$user_info['us_password']);
 		return "Authorization: Basic $b64";
 	}
@@ -112,7 +119,8 @@ class OC_importerHTTP {
 	 * @param $masterpw Master password for the key store
 	 * @param $verbose Whether or not to report progress
 	 */
-	public function getFile($url, $dir, $l, $overwrite = 'auto', $preserveDir = FALSE, $masterpw = NULL, $verbose = TRUE){
+	public function getFile($url, $dir, $l, $overwrite = 'auto', $preserveDir = FALSE,
+			$masterpw = NULL, $verbose = FALSE){
 
 		 ini_set('user_agent', self::$USER_AGENT);
 
@@ -121,7 +129,8 @@ class OC_importerHTTP {
 				throw new Exception("Security violation.");
 			}
 			
-			$fs = self::getStorage();
+			//$fs = self::getStorage();
+			$fs = new \OC\Files\View($this->filesDir);
 			
 			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
 			
@@ -150,15 +159,15 @@ class OC_importerHTTP {
 		  $user_info = OC_importer::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
 
 			$code = 0;
-			if(!self::checkFileAccess($url, $code, $user_info)){
-				if(!self::checkFileAccess($url, $code, $user_info, FALSE)){
+			if(!$this->checkFileAccess($url, $code, $user_info)){
+				if(!$this->checkFileAccess($url, $code, $user_info, FALSE)){
 					throw new Exception((array_key_exists($code, self::$http_codes)?self::$http_codes[$code]:"Unknown return code: ".$code));
 				}
 			}
 
-			$size = self::getRemoteFileSize($url, $user_info);
+			$size = $this->getRemoteFileSize($url, $user_info);
 			if($size == 0){
-				$size = self::getRemoteFileSize($url, $user_info, FALSE);
+				$size = $this->getRemoteFileSize($url, $user_info, FALSE);
 				if($size == 0){
 					throw new Exception($l->t('File size is 0. ').$url);
 				}
@@ -195,23 +204,34 @@ class OC_importerHTTP {
 				$user_info['us_password'] = $m[3];
 			}
 			if(preg_match('/^(https*):\/\/([^@]+)$/', $url, $m) && !empty($user_info) && !isset($purl['user']) && isset($user_info['us_username'])){
-				$auth = static::getAuthHeader($user_info);
+				$auth = $this->getAuthHeader($user_info);
 				$opts = array (
 				        	'http' => array (
-				          'method' => "GET",
-				          'header' => $auth,
-				          'user_agent' => self::$USER_AGENT,
-				          'max_redirects' => '10'
-				        )
+					          'method' => "GET",
+					          'header' => $auth,
+					          'user_agent' => self::$USER_AGENT,
+					          'max_redirects' => '10',
+				        	),
+				        	'ssl'=>array(
+				        		'verify_peer' => true,
+				        		'verify_peer_name' => true,
+				        		'cafile' => __DIR__.'/cacert.pem'
+				        	)
 				);
 			}
 			else{
 				$opts = array (
-				        	'http' => array (
-				          'method' => "GET",
-				          'user_agent' => self::$USER_AGENT,
-				          'max_redirects' => '10'
-				        )
+					        'http' => array (
+					          'method' => "GET",
+					          'user_agent' => self::$USER_AGENT,
+					          'max_redirects' => '10',
+				        	),
+							'ssl'=>array(
+								'verify_peer' => true,
+								'verify_peer_name' => true,
+								'cafile' =>  __DIR__.'/cacert.pem'
+							)
+						
 				);
 			}
 			$context = stream_context_create($opts);
@@ -271,7 +291,7 @@ class OC_importerHTTP {
 				$this->pb->setError($e->getMessage());
 			}
 			else{
-				throw $e;
+				print $e->getMessage()."\n";
 			}
 		}
 	}
@@ -283,7 +303,7 @@ class OC_importerHTTP {
 	 * @param $head whether or not to use HEAD instead of GET
 	 * @return The cURL result
 	 */
-	protected static function execURL($url, $user_info = NULL, $head = TRUE){
+	protected function execURL($url, $user_info = NULL, $head = TRUE){
 		$url = str_replace(Array(" ", "\r", "\n"), Array("%20"), $url);
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_HEADER, TRUE);
@@ -326,9 +346,9 @@ class OC_importerHTTP {
 	 * @param $head whether or not to use HEAD instead of GET
 	 * @return Int Size of the remote file 
 	 */
-	private static function getRemoteFileSize($remoteFile, $user_info, $head = TRUE){
+	private function getRemoteFileSize($remoteFile, $user_info, $head = TRUE){
 		OC_Log::write('importer','Checking size of: '.$remoteFile, OC_Log::WARN);
-		$data = static::execURL($remoteFile, $user_info, $head);
+		$data = $this->execURL($remoteFile, $user_info, $head);
 		if($data === false){
 			return 0;
 		}
@@ -348,10 +368,10 @@ class OC_importerHTTP {
 	 * @param $head whether or not to use HEAD instead of GET
 	 * @return Boolean
 	 */
-	private static function checkFileAccess($url, &$code, $user_info, $head = TRUE){
+	private function checkFileAccess($url, &$code, $user_info, $head = TRUE){
 		OC_Log::write('importer','Checking rights of: '.$url, OC_Log::WARN);
 		$code = 'unknown';
-		$data = static::execURL($url, $user_info, $head);
+		$data = $this->execURL($url, $user_info, $head);
 		if($data === false){
 			return FALSE;
 		}

@@ -35,7 +35,10 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 ?>
 
 <div class="titleblock">
-	<span>Import destination: </span>
+	<span>Destination: </span>
+	<?php if(OCP\App::isEnabled('user_group_admin')){ ?>
+	<select id=user_groups_move_select><option value="home">Home</option></select>
+	<?php } ?>
 	<span class="urlc" title="Destination folder">
 		<input type="text" name="importer_download_folder" class="url"
 		value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>"

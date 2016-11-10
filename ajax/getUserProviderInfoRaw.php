@@ -30,7 +30,7 @@ if(!empty($provider)){
 	}
 }
 
-if(!empty($myprovider) && preg_match('/^pr_([^_^&]+)$/', $myprovider, $m)){
+if(!empty($provider) && preg_match('/^pr_([^_^&]+)$/', $provider, $m)){
 	$user_info = OC_importer::getUserProviderInfoRaw($m[1]);
 }
 else{
