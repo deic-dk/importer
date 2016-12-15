@@ -32,7 +32,6 @@ class OC_importer {
 	private static $expire = 0;//time()+60*60*24*30;
 	//private static $expired = time()-3600;
 	private static $path = '/';
-	private static $domain = 'data.deic.dk';//this causes a dot to be prepended
 	private static $downloadFolderTag = ':::';
 
 	
@@ -381,9 +380,10 @@ class OC_importer {
 	}
 	
 	public static function storeMasterPw($master_pw){
+		$cookiedomain = \OCP\Config::getSystemValue('cookiedomain', '');
 		$sessionPwHash = self::getSessionPwHash();
 		$encMasterPw = self::my_encrypt($master_pw, $sessionPwHash);
-		$ret = setcookie(self::$cookieName, $encMasterPw, self::$expire, self::$path, self::$domain, false, false);
+		$ret = setcookie(self::$cookieName, $encMasterPw, self::$expire, self::$path, $cookiedomain, false, false);
 		OC_Log::write('importer', "Stored master password  ".$encMasterPw." in cookie with name ".self::$cookieName, OC_Log::WARN);
 		return $ret;
 	}
