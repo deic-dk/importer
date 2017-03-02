@@ -121,8 +121,11 @@ $(document).ready(function(){
 			$(this).find("input.enc[type='hidden']").val("0");
 		}
 		else{
+			// Browsers no longer honor autocomplete="off" for password fields and FF offers
+			// to remember passwords even when not clicking save. 
+			// TODO: find solution.
 			$(this).find("input.enc[type='hidden']").val("1");
-		}
+		}	
 		// FF remembers if checkboxes are checked on reload. Just clear them all.
 		$(this).find("input.personal-show[type='checkbox']").first().attr("checked", false);
 		});
