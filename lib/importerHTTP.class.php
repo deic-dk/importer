@@ -135,7 +135,7 @@ class OC_importerHTTP {
 			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
 			
 			$parsed_url = parse_url($url);
-			$rpathinfo = pathinfo($parsed_url['path']);
+			$rpathinfo = pathinfo(urldecode($parsed_url['path']));
 			$filename = $rpathinfo['basename'];
 
 			if($preserveDir){
@@ -272,13 +272,14 @@ class OC_importerHTTP {
 				}
 				usleep(100);
 			}
-			\OC\Files\Cache\Updater::writeUpdate($dl_dir . "/" . $filename);
+			$cacheUpdater = new \OC\Files\Cache\Updater($fs);
+			$cacheUpdater->update($dl_dir . "/" . $filename);
 			$end_time = microtime(TRUE);
 			$spent_time = $end_time-$start_time;
 			$mbps = $size/$spent_time/(pow(10, 6));
+			OC_importer::setUserHistory($url, 1);
 			if(!$this->batch){
 				$this->pb->setProgressBarProgress(100);
-				OC_importer::setUserHistory($url, 1);
 			}
 			else{
 				print(($skip_file?"Skipped":"Done")." (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s, chunksize: ".$chunkSize.")\n");

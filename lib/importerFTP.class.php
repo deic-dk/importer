@@ -188,7 +188,7 @@ class OC_importerFTP {
 			
 			$dl_dir = empty($dir)?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
 						
-			$rpathinfo = pathinfo($url['path']);
+			$rpathinfo = pathinfo(urldecode($url['path']));
 			$filename = $rpathinfo['basename'];
 
 			if($preserveDir){
@@ -237,7 +237,8 @@ class OC_importerFTP {
 				usleep(100);
 			  $ret = ftp_nb_continue($this->conn);
 			}
-			\OC\Files\Cache\Updater::writeUpdate($dl_dir . "/" . $filename);
+			$cacheUpdater = new \OC\Files\Cache\Updater($fs);
+			$cacheUpdater->update($dl_dir . "/" . $filename);
 			$end_time = microtime(true);
 			$spent_time = $end_time-$start_time;
 			$mbps = $size/$spent_time/(pow(10, 6));
@@ -245,9 +246,9 @@ class OC_importerFTP {
 				throw new Exception($l->t('Download error'));
 			}
 			else{
+				OC_importer::setUserHistory($rurl, 1);
 				if(!$this->batch){
 					$this->pb->setProgressBarProgress(100);
-					OC_importer::setUserHistory($rurl, 1);
 					OC_Log::write('importer','Finished FTP download of '.$rurl.' Size: '.$size.
 						" bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s", OC_Log::WARN);
 				}
