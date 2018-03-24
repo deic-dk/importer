@@ -42,7 +42,7 @@ OCP\App::addNavigationEntry(Array(
 	'order' => 30,
 	'href' => OCP\Util::linkTo('importer', 'importer.php'),
 	'//icon' => OCP\Util::imagePath('importer', 'importer.svg'),
-	'name' => 'Importer'
+	'name' => $l->t('Import')
 ));
 
 OCP\App::registerPersonal('importer', 'personalsettings');
