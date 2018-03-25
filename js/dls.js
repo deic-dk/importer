@@ -93,7 +93,7 @@ function addDownload(d, newurl, newprov, newpreserve){
 		$("#elt_"+parseInt(elt_num+1)+" input.slider-check").attr("value", "1");
 		$("#elt_"+parseInt(elt_num+1)+" input.slider-check").attr("checked", "checked");
 		$("#elt_"+parseInt(elt_num+1)+" .slider-frame .slider-button").addClass("on");
-		$("#elt_"+parseInt(elt_num+1)+" .slider-frame .slider-button").text("nested");
+		$("#elt_"+parseInt(elt_num+1)+" .slider-frame .slider-button").text(t("importer", "nested"));
 	}
 	
 	$("#elt_"+parseInt(elt_num+1)+" .addelt").bind('click',function(){
@@ -109,7 +109,7 @@ function addDownload(d, newurl, newprov, newpreserve){
 		$(this).remove();
 	});
 	var aa = parseInt(elt_num+1);
-	$('#elt_'+aa+' select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
+	$('#elt_'+aa+' select').chosen({disable_search_threshold: 10, placeholder_text_single: t("importer", "Data source"), allow_single_deselect: true});
 	if(d){
 		$('#elt_'+aa+' button.eltdelete').bind('click',function(){
 			remove_eltdelete($('#elt_'+aa));
@@ -141,7 +141,7 @@ function setProvidertitles(e){
 			$(this).parent().next('input[type="checkbox"]').attr('value', '1');
 		},
 		function(){
-			$(this).removeClass('on').html('flat').parent().next('input[type="checkbox"]').removeAttr('checked');
+			$(this).removeClass('on').html(t('importer', 'Flat')).parent().next('input[type="checkbox"]').removeAttr('checked');
 			$(this).parent().next('input[type="checkbox"]').attr('value', '0');
 	});
 }
@@ -250,7 +250,7 @@ function checkMasterPw(url, provider){
 		type:'POST',
 		url:OC.linkTo('importer','ajax/getUserProviderInfoRaw.php'),
 				dataType:'json',
-				data:{url:url, provider, provider:provider},
+				data:{url:url, provider:provider},
 				async:false,
 				success:function(s){
 					decrypting = false;
@@ -357,17 +357,17 @@ function addFirstDownload(v, myprov, mypreserve){
 		  mysel.find('select').toggle(true);
 		  mysel.find('select').removeClass('chzn-done');
 		  mysel.find('select').val(myprov);
-			mysel.find('select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
+			mysel.find('select').chosen({disable_search_threshold: 10, placeholder_text_single: t("importer", "Data source"), allow_single_deselect: true});
 		  mysel.find("input.slider-check").attr("value", mypreserve?"1":"0");
 			mysel.find("input.slider-check").attr("checked", mypreserve);
 			var aa = parseInt(elt_num+1);
 			if(mypreserve=="1"){
 				$("#elt_"+aa+" .slider-frame .slider-button").addClass("on");
-				$("#elt_"+aa+" .slider-frame .slider-button").text("nested");
+				$("#elt_"+aa+" .slider-frame .slider-button").text(t("importer", "Nested"));
 			}
 			else{
 				$("#elt_"+aa+" .slider-frame .slider-button").removeClass("on");
-				$("#elt_"+aa+" .slider-frame .slider-button").text("flat");
+				$("#elt_"+aa+" .slider-frame .slider-button").text(t("importer", "Flat"));
 			}
 			mysel.find('button.eltdelete').remove();
 			return true;
@@ -549,7 +549,7 @@ function loadFolderUrl(){
 function saveList(){
 	var file_name = $("#save_pop .elts .urlc input").val().trim();
 	if( file_name==""){
-		$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Provide a file name!'));
+		$("#save_pop .elts span.dling").html('<img src="'+OC.imagePath('importer','warning.png')+'" />&nbsp;'+t('importer','Provide a filename!'));
 		return;
 	}
 	var urlList = {};
@@ -576,7 +576,7 @@ $(document).ready(function(){
 	$('.urlc').tipsy({gravity:'s', fade:true});
 	$('#toggle_history').tipsy({gravity:'s', fade:true});
 
-	$('#elt_'+$('#dllist div.elts').size()+' select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
+	$('#elt_'+$('#dllist div.elts').size()+' select').chosen({disable_search_threshold: 10, placeholder_text_single: t("importer", "Data source"), allow_single_deselect: true});
 	setProvidertitles('#elt_'+$('#dllist div.elts').size());
 
 	$("#geturl").button({text:true}).bind('click',function(){
@@ -598,7 +598,7 @@ $(document).ready(function(){
 		});
 		first_elt.find('input.url').val('');
 		if(first_elt.find('.addelt').length==0){
-			var add_elt = first_elt.find('.dling').first().before('<button class="addelt" title="Add another download">+</button>');
+			var add_elt = first_elt.find('.dling').first().before('<button class="addelt" title="'+t('importer',  'Add another download')+'">+</button>');
 			add_elt.bind('click',function(){
 				addDownload(true);
 				$(this).remove();
@@ -649,22 +649,24 @@ $(document).ready(function(){
 		saveList();
 	});
 
+
+	var mydialog0;
+	var buttons = {};
+	buttons[t("importer", "Choose")] = function() {
+ 		readListFile();
+ 		mydialog0.dialog("close");
+ 	};
+ 	buttons[t("importer", "Cancel")] = function() {
+ 		mydialog0.dialog("close");
+	};
 	mydialog0 = $("#dialog0").dialog({//create dialog, but keep it closed
-	  title: "Choose file",
+	  title: t("importer", "Choose file"),
 	  autoOpen: false,
 	  height: 440,
 	  width: 620,
 	  modal: true,
 	  dialogClass: "no-close",
-	  buttons: {
-	   	"Choose": function() {
-	   		readListFile();
-	   		mydialog0.dialog("close");
-	   	},
-	   	"Cancel": function() {
-	   		mydialog0.dialog("close");
-			}
-	  }
+	  buttons: buttons
 	});
 	
 	$("#chooselist").button({text:true}).bind('click',function(){
@@ -712,7 +714,7 @@ $(document).ready(function(){
 		var first_elt = get_first_elt();
 		var first_id = get_first_id();
 		if($(this).parent().attr('id')==first_id){
-			first_elt.find('.dling').first().before('<button class="eltdelete" title="Remove this download">-</button>');
+			first_elt.find('.dling').first().before('<button class="eltdelete" title="'+t('importer',  'Remove this download')+'">-</button>');
 			first_elt.find('button.eltdelete').first().bind('click',function(){
 				remove_eltdelete(first_elt);
 			});
@@ -737,24 +739,24 @@ $(document).ready(function(){
 		});
 	});
 
-
- mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
-		title: "Enter master password",
+	var mydialog1;
+	var buttons1 = {};
+	buttons1[t("importer", "OK")] = function() {
+		pw_ok_func();
+ 	};
+ 	buttons1[t("importer", "Cancel")] = function() {
+		pw_attempts = 0;
+		importer_pw = "";
+		importer_pw_ok = false;
+		mydialog1.dialog("close");
+	};
+	mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
+		title: t("importer", "Enter master password"),
 		autoOpen: false,
 		width: $("label.nowrap").width()+64,
 		modal: true,
 		dialogClass: "no-close my-dialog",
-		buttons: {
-			"OK": function() {
-				pw_ok_func();
-			},
-			"Cancel": function() {
-				pw_attempts = 0;
-				importer_pw = "";
-				importer_pw_ok = false;
-				mydialog1.dialog("close");
-			}
-		}
+		buttons: buttons1
 	});
 
  $("#oc_pw_dialog input#importer_pw").keypress(function (e) {
@@ -765,11 +767,11 @@ $(document).ready(function(){
  
  $('.slider-button').toggle(
 	function(){
-		$(this).addClass('on').html('nested').parent().next('input[type="checkbox"]').attr('checked', 'checked');
+		$(this).addClass('on').html(t('importer', 'Nested')).parent().next('input[type="checkbox"]').attr('checked', 'checked');
 		$(this).parent().next('input[type="checkbox"]').attr('value', '1');
 	},
 	function(){
-	 $(this).removeClass('on').html('flat').parent().next('input[type="checkbox"]').removeAttr('checked');
+	 $(this).removeClass('on').html(t('importer', 'Flat')).parent().next('input[type="checkbox"]').removeAttr('checked');
 	 $(this).parent().next('input[type="checkbox"]').attr('value', '0');
 	});
  
@@ -793,11 +795,11 @@ $(document).ready(function(){
 				}
 				else{
 					$('#user_groups_move_select option').filter(function() { 
-						return ($(this).text() == 'Home' && $(this).val() == 'home');
+						return ($(this).text() == t('importer', 'Home') && $(this).val() == 'home');
 				}).prop('selected', true); 
 				}
 			}
-			$('#user_groups_move_select').chosen({disable_search_threshold: 10, placeholder_text_single: "Data source", allow_single_deselect: true});
+			$('#user_groups_move_select').chosen({disable_search_threshold: 10, placeholder_text_single: t("importer", "Data source"), allow_single_deselect: true});
 			$('#user_groups_move_select').change(function(ev){
 				$('input[name=importer_download_folder]').val('/');
 			});

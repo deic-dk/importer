@@ -21,7 +21,17 @@ function stripLeadingSlash(str) {
 
 $(document).ready(function(){
 
-  choose_download_folder_dialog = $("div.importer_folder_dialog").dialog({//create dialog, but keep it closed
+	var choose_download_folder_dialog;
+	var buttons = {};
+	buttons[t("importer", "Choose")] = function() {
+		folder = stripTrailingSlash($('#download_folder').text());
+		chooseDownloadFolder(folder);
+		choose_download_folder_dialog.dialog("close");
+ 	};
+ 	buttons[t("importer", "Cancel")] = function() {
+		choose_download_folder_dialog.dialog("close");
+	};
+	choose_download_folder_dialog = $("div.importer_folder_dialog").dialog({//create dialog, but keep it closed
    title: "Choose destination folder",
     autoOpen: false,
     height: 440,
@@ -31,16 +41,7 @@ $(document).ready(function(){
     autoOpen: false,
     resizeable: false,
     draggable: false,
-    buttons: {
-	  "Choose": function() {
-		folder = stripTrailingSlash($('#download_folder').text());
-		chooseDownloadFolder(folder);
-		choose_download_folder_dialog.dialog("close");
-	  },
-	  "Cancel": function() {
-		choose_download_folder_dialog.dialog("close");
-	  }
-	}
+    buttons: buttons
   });
 
   $('.importer_choose_download_folder').live('click', function(){

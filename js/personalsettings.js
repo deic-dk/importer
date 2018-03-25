@@ -158,27 +158,27 @@ $(document).ready(function(){
 		});
 	});
 
+	var mydialog1;
+	var buttons1 = {};
+	buttons1[t("importer", "OK")] = function() {
+		pw_ok_func();
+ 	};
+ 	buttons1[t("importer", "Cancel")] = function() {
+		pw_attempts = 0;
+		importer_pw = "";
+		importer_pw_ok = false;
+		mydialog1.dialog('close');
+		if(!submitting){
+			input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
+			var orig_val = input_field.parent().find(".orig_enc_pw").first().val();
+			input_field.val(orig_val);
+	};
  mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
-		title: "Enter master password",
+		title: t("importer", "Enter master password"),
 		autoOpen: false,
 		modal: true,
 		dialogClass: "no-close my-dialog",
-		buttons: {
-			"OK": function() {
-				pw_ok_func();
-			},
-			"Cancel": function() {
-				pw_attempts = 0;
-				importer_pw = "";
-				importer_pw_ok = false;
-				mydialog1.dialog('close');
-				if(!submitting){
-					input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
-					var orig_val = input_field.parent().find(".orig_enc_pw").first().val();
-					input_field.val(orig_val);
-				}
-			}
-		}
+		buttons: buttons1
 	});
 
 	$("#oc_pw_dialog input#importer_pw").keypress(function (e) {

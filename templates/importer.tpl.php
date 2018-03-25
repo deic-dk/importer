@@ -35,15 +35,15 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 ?>
 
 <div class="titleblock">
-	<span>Destination: </span>
+	<span><?php p($l->t("Destination"));?>: </span>
 	<?php if(OCP\App::isEnabled('user_group_admin')){ ?>
-	<select id=user_groups_move_select><option value="home">Home</option></select>
+	<select id=user_groups_move_select><option value="home"><?php p($l->t("Home"));?></option></select>
 	<?php } ?>
-	<span class="urlc" title="Destination folder">
+	<span class="urlc" title="<?php p($l->t("Destination folder"));?>">
 		<input type="text" name="importer_download_folder" class="url"
-		value="<?php print(isset($_['download_folder'])?$_['download_folder']:''); ?>"
+		value="<?php p(isset($_['download_folder'])?$_['download_folder']:''); ?>"
 		placeholder="folder" />
-		<label class="importer_choose_download_folder btn btn-flat">browse</label>
+		<label class="importer_choose_download_folder btn btn-flat"><?php p($l->t("Browse"));?></label>
 		<div id="download_folder" style="visibility:hidden;display:none;"></div>
 		<div class="importer_folder_dialog" display="none">
 			<div class="loadFolderTree"></div>
@@ -52,11 +52,11 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 	</span>
 	<?php if(!isset($_['curl_error']) && !isset($_['todl'])){ ?>
   <span class="dlbtn">
-  	<button class="btn btn-primary btn-flat" id="geturl" title="Import all files"><?php print($l->t('Import')); ?></button>
-    <button class="btn btn-default btn-flat" id="clearList" title="Clear list of files"><?php print($l->t('Clear')); ?></button>
-    <button class="btn btn-default btn-flat" id="savelist" title="Save list to file"><?php print($l->t('Save')); ?></button>
-    <button class="btn btn-default btn-flat" id="chooselist" title="Load list from saved file"><?php print($l->t('Load')); ?></button>
-    <button class="btn btn-default btn-flat" id="getfolderurl" title="List remote directory"><?php print($l->t('Scan URL')); ?></button>
+  	<button class="btn btn-primary btn-flat" id="geturl" title="<?php p($l->t('Import all files on list'));?>"><?php p($l->t('Import'));?></button>
+    <button class="btn btn-default btn-flat" id="clearList" title="<?php p($l->t('Clear list of files'));?>"><?php p($l->t('Clear'));?></button>
+    <button class="btn btn-default btn-flat" id="savelist" title="<?php p($l->t('Save list to file'));?>"><?php p($l->t('Save'));?></button>
+    <button class="btn btn-default btn-flat" id="chooselist" title="<?php p($l->t('Load list from saved file'));?>"><?php p($l->t('Load'));?></button>
+    <button class="btn btn-default btn-flat" id="getfolderurl" title="<?php p($l->t('List remote directory'));?>"><?php p($l->t('Scan URL'));?></button>
   </span>
   <div class='clear'></div>
 	<?php } ?>
@@ -67,21 +67,21 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 
 <div id="folder_pop">
 	<div id="elt_0" class="elts folder">
-			<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
+			<select class="chzen-select" title="<?php p($l->t('Choose data provider / protocol'));?>" data-placeholder="<?php p($l->t('Data source'));?>">
 					<option value="0"></option>
 					<?php foreach($_['user_prov_set'] as $prov){ ?>
-					<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
+					<option value="pr_<?php p($prov['pr_id']); ?>"><?php p($prov['pr_name']);?></option>
 					<?php } ?>
 			</select>
-			<span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
-				<span class="slider-button">flat</span>
+			<span class="slider-frame" title="<?php p($l->t('Keep directory structure'));?>">
+				<span class="slider-button"><?php p($l->t('Flat'));?></span>
 			</span>
 			<input type="checkbox" value="0" class="slider-check" />
-		<span class="urlc" title="<?php print($l->t('URL of the folder to download')); ?>">
-			<input id="folderurl" type="text" class="url" value="" placeholder="<?php print($l->t('Folder URL')); ?>" />
+		<span class="urlc" title="<?php p($l->t('URL of the folder to download')); ?>">
+			<input id="folderurl" type="text" class="url" value="" placeholder="<?php p($l->t('Folder URL')); ?>" />
 		</span>
-		<span class="load" title="<?php print($l->t('List content of folder')); ?>">
-			<button id="loadFolder"><?php print($l->t('Scan')); ?></button>
+		<span class="load" title="<?php p($l->t('List content of folder')); ?>">
+			<button id="loadFolder"><?php p($l->t('Scan')); ?></button>
 		</span>
 		<span class="dling"></span>
 	</div>
@@ -89,85 +89,87 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 
 <div id="save_pop">
 	<div id="save_list" class="elts folder">
-		<span class="urlc" title="<?php print($l->t('Type name and hit enter to save')); ?>">
-			<input id="urllist" type="text" class="url" value="" placeholder="<?php print($l->t('File name')); ?>" />
-			<button id="save_list" class="btn btn-flat">Save</button>
+		<span class="urlc" title="<?php p($l->t('Type name and hit enter to save')); ?>">
+			<input id="urllist" type="text" class="url" value="" placeholder="<?php p($l->t('Filename')); ?>" />
+			<button id="save_list" class="btn btn-flat"><?php p($l->t('Save'));?></button>
 		</span>
 		<span class="dling"></span>
 	</div>
 </div>
 
-<div id="dialog0" title="<?php print($l->t('Choose file')); ?>">
+<div id="dialog0" title="<?php p($l->t('Choose file')); ?>">
 </div>
 <div id="chosen_file"></div>
 
 	<?php if(isset($_['curl_error'])){ ?>
 	<div class="personalblock red">
-		<?php print($l->t('The application needs the <strong>PHP cURL</strong> extension to be loaded !')); ?>
+		<?php p($l->t('The application needs the <strong>PHP cURL</strong> extension to be loaded !')); ?>
 	</div>
 	<?php }else{ ?>
 		<div id="dllist" class="personalblock">
 			<div id="elt_1" class="elts new">
-					<select class="chzen-select" title="<?php print($l->t('Data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
+					<select class="chzen-select" title="<?php p($l->t('Choose data provider / protocol'));?>" data-placeholder="<?php p($l->t('Data source')); ?>">
 						<option value="0"></option>
 						<?php foreach($_['user_prov_set'] as $prov){ ?>
-						<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
+						<option value="pr_<?php p($prov['pr_id']); ?>"><?php p($prov['pr_name']); ?></option>
 						<?php } ?>
 					</select>
-				<span title="<?php print($l->t('Keep directory structure')); ?>" class="slider-frame">
-					<span class="slider-button">flat</span>
+				<span title="<?php p($l->t('Keep directory structure'));?>" class="slider-frame">
+					<span class="slider-button"><?php p($l->t('Flat'));?></span>
 				</span>
 				<input type="checkbox" value="0" class="slider-check" />
-				<span class="urlc" title="<?php print($l->t('URL of the file to download')); ?>">
-					<input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
+				<span class="urlc" title="<?php p($l->t('URL of the file to download')); ?>">
+					<input type="text" class="url" value="" placeholder="<?php p($l->t('File URL')); ?>" />
 				</span>
-				<button class="addelt" title="Add another download">+</button>
+				<button class="addelt" title="<?php p($l->t('Add another download'));?>">+</button>
 				<span class="dling"></span>
 		</div>
 	</div>
 		<div id="hiddentpl">
-				<select class="chzen-select" title="<?php print($l->t('Select data source')); ?>" data-placeholder="<?php print($l->t('Data source')); ?>">
+				<select class="chzen-select" title="<?php p($l->t('Choose data provider / protocol'));?>" data-placeholder="<?php p($l->t('Data source'));?>">
 					<option value="0"></option>
 					<?php foreach($_['user_prov_set'] as $prov){ ?>
-					<option value="pr_<?php print($prov['pr_id']); ?>"><?php print($prov['pr_name']); ?></option>
+					<option value="pr_<?php p($prov['pr_id']); ?>"><?php p($prov['pr_name']);?></option>
 					<?php } ?>
 				</select>
-				<span class="slider-frame" title="<?php print($l->t('Keep directory structure')); ?>">
-					<span class="slider-button">flat</span>
+				<span class="slider-frame" title="<?php p($l->t('Keep directory structure'));?>">
+					<span class="slider-button"><?php p($l->t('Flat'));?></span>
 				</span>
 				<input type="checkbox" value="0" class="slider-check" />
-			<span class="urlc" title="<?php print($l->t('URL of the file to download')); ?>">
-				<input type="text" class="url" value="" placeholder="<?php print($l->t('File URL')); ?>" />
+			<span class="urlc" title="<?php p($l->t('URL of the file to download')); ?>">
+				<input type="text" class="url" value="" placeholder="<?php p($l->t('File URL'));?>" />
 			</span>
-			<button class="eltdelete" title="Remove this download">-</button>
-			<button class="addelt" title="Add another download">+</button>
+			<button class="eltdelete" title="<?php p($l->t('Remove this download'));?>">-</button>
+			<button class="addelt" title="<?php p($l->t('Add another download'));?>">+</button>
 			<span class="dling"></span>
 		</div>
 	<?php } ?>
 	<div id="divhisto" class="personalblock">
 		<?php $status = Array($l->t('Unknown error'),$l->t('OK')); 
 		print($l->t('Download history')); ?>&nbsp;
-		<i id="toggle_history" class="icon-angle-right" title="Toggle history"></i>
-		<button id="clear_history" title="Clear import history" class="btn btn-flat ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false"><?php print($l->t('Clear')); ?></button>
+		<i id="toggle_history" class="icon-angle-right" title="<?php p($l->t('Toggle history'));?>"></i>
+		<button id="clear_history" title="<?php p($l->t('Clear import history'));?>"
+		class="btn btn-flat ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+		role="button" aria-disabled="false"><?php p($l->t('Clear'));?></button>
 		<table id="importer_history" border="0" cellpadding="0" cellspacing="0" style="display:none;">
 			<thead>
 				<tr>
-					<th class="col1"><?php print($l->t('File')); ?></th>
-					<th class="col2"><?php print($l->t('Date / Time')); ?></th>
-					<th class="col3"><?php print($l->t('Status')); ?></th>
+					<th class="col1"><?php p($l->t('File'));?></th>
+					<th class="col2"><?php p($l->t('Date / Time'));?></th>
+					<th class="col3"><?php p($l->t('Status'));?></th>
 				</tr>
 			</thead>
 			<tbody id="tbhisto">
 			<?php if(!$_['user_history']){ ?>
 			<tr>
-				<td colspan="4"><?php print($l->t('No history for now')); ?></td>
+				<td colspan="4"><?php p($l->t('No history for now'));?></td>
 			</tr>
 			<?php }else{ 
 				foreach($_['user_history'] as $history){ ?>
 				<tr>
-					<td class="col1"><?php print($history['dl_file']); ?></td>
-					<td class="col2"><?php print($history['dl_ts']); ?></td>
-					<td class="col3"><?php print($status[$history['dl_status']]); ?></td>
+					<td class="col1"><?php p($history['dl_file']); ?></td>
+					<td class="col2"><?php p($history['dl_ts']); ?></td>
+					<td class="col3"><?php p($status[$history['dl_status']]); ?></td>
 				</tr>
 				<?php }
 			} ?>
@@ -176,5 +178,5 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 	</div>
 <br />
 <div id="oc_pw_dialog">
-<label class="nowrap">Master password to decrypt stored provider passwords: </label><input type="password" id="importer_pw" />
+<label class="nowrap"><?php p($l->t('Master password to decrypt stored provider passwords'));?>: </label><input type="password" id="importer_pw" />
 </div>
