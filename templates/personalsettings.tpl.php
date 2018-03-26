@@ -41,15 +41,15 @@ OCP\Util::addStyle('importer', 'personalsettings');
 		<span style="float:left;width:100px;">
 			<label title="<?php p(isset($p['pr_desc'])?$p['pr_desc']:''); ?>"><?php p($p['pr_name']); ?></label>
 		</span>
-		<input class="username" type="text" autocomplete="off" name="importer_pr_un_<?php p($p['pr_id']); ?>" id="importer_pr_un_<?php p($p['pr_id']); ?>" value="<?php p(!is_null($p['us_id'])?$p['us_username']:''); ?>" placeholder="<?php p($l->t("Username"));?>" />
+		<input class="username" type="text" autocomplete="off" name="importer_pr_un_<?php p($p['pr_id']); ?>" id="importer_pr_un_<?php p($p['pr_id']); ?>" value="<?php p(!is_null($p['us_id'])?$p['us_username']:''); ?>" placeholder="<?php p($l->t('Username'));?>" />
 
-		<input class="password" autocomplete="off" type="password" name="importer_pr_pw_<?php p($p['pr_id']); ?>" id="importer_pr_pw_<?php p($p['pr_id']); ?>" value="<?php p(!is_null($p['us_id'])?$p['us_password']:''); ?>" placeholder="<?php p($l->t("Password"));?>" data-typetoggle="#importer_pr_show_<?php p($p['pr_id']); ?>" />
+		<input class="password" autocomplete="off" type="password" name="importer_pr_pw_<?php p($p['pr_id']); ?>" id="importer_pr_pw_<?php p($p['pr_id']); ?>" value="<?php p(!is_null($p['us_id'])?$p['us_password']:''); ?>" placeholder="<?php p($l->t('Password'));?>" data-typetoggle="#importer_pr_show_<?php p($p['pr_id']); ?>" />
 		
 		<input type="checkbox" id="importer_pr_show_<?php p($p['pr_id']); ?>" class="personal-show" /><label for="importer_pr_show_<?php p($p['pr_id']); ?>"></label>
 		
 		<input type="hidden" id="importer_pr_orig_<?php p($p['pr_id']); ?>" name="importer_pr_orig_<?php p($p['pr_id']); ?>"  placeholder="Encrypted" class="orig_enc_pw" value="<?php p(!is_null($p['us_id'])?$p['us_password']:''); ?>" />
 		<input type="hidden" id="importer_pr_enc_<?php p($p['pr_id']); ?>" name="importer_pr_enc_<?php p($p['pr_id']); ?>"  placeholder="Encrypted" class="enc" value="1" />
-		<?php p((!is_null($p['us_id'])?'<img class="importer-delete" src="' . OC_Helper::imagePath('importer', 'delete.png') . '" rel="' . $p['pr_id'] . '" title="'.$l->t('Clear').'" />':''); ?>
+		<?php p(!is_null($p['us_id'])?'<img class="importer-delete" src="' . OC_Helper::imagePath('importer', 'delete.png') . '" rel="' . $p['pr_id'] . '" title="'.$l->t('Clear').'" />':''); ?>
 		<?php p(!array_key_exists($p['pr_id'], $_['errors'])?'':'<label class="error">'.$_['errors'][$p['pr_id']].'</label>')?>
 	</div>
 		<?php } ?>
