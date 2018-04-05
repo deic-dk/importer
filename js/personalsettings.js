@@ -172,7 +172,8 @@ $(document).ready(function(){
 			input_field.parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
 			var orig_val = input_field.parent().find(".orig_enc_pw").first().val();
 			input_field.val(orig_val);
-	};
+		}
+ 	};
  mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
 		title: t("importer", "Enter master password"),
 		autoOpen: false,

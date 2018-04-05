@@ -26,7 +26,7 @@ OCP\Util::addStyle('importer', 'personalsettings');
 ?>
 
 <fieldset id="importerPersonalSettings" class="section">
-	<h2>Importer</h2>
+	<h2><?php p($l->t("Data import"));?></h2>
 	<input type="hidden" id="importer" name="importer" value="1" />
 	<br />
 	<div>
