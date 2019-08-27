@@ -32,7 +32,7 @@ $(document).ready(function(){
 		choose_download_folder_dialog.dialog("close");
 	};
 	choose_download_folder_dialog = $("div.importer_folder_dialog").dialog({//create dialog, but keep it closed
-   title: "Choose destination folder",
+   title: t("importer", "Choose destination folder"),
     autoOpen: false,
     height: 440,
     width: 620,
