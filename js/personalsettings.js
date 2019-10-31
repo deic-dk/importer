@@ -92,7 +92,7 @@ function pw_ok_func(){
 	unlock_pw();
 }
 
-function submit_form(){
+function submit_importer_form(){
 	$.ajax({
 		type:'POST',
 		url:OC.linkTo('importer','ajax/updatePersonalSettings.php'),
@@ -134,6 +134,7 @@ $(document).ready(function(){
 		$('#importer_pr_un_' + $(this).attr('rel')).val('');
 		$('#importer_pr_pw_' + $(this).attr('rel')).val('');
 		$('input[name="importer_pr_pw_' + $(this).attr('rel')+'-clone"]').val('');
+		 $(this).parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
 	});
 	$('.importer-delete').tipsy({gravity:'s',fade:true});
 
@@ -149,8 +150,14 @@ $(document).ready(function(){
 			});
 			$(this).parent().find("input.personal-show[type='checkbox']").first().bind('click', function() {
 				input_field = $(this).parent().find("input.password").first();
-				var inputType = input_field.attr('type');
-				input_field.attr('type', inputType=='password'?'text':'password');
+				//var inputType = input_field.attr('type');
+				//input_field.attr('type', inputType=='password'?'text':'password');
+				if(input_field.hasClass('numeric-password')){
+					input_field.removeClass('numeric-password');
+				}
+				else{
+					input_field.addClass('numeric-password');
+				}
 				if(!importer_pw_ok || encVal!=''){
 					unlock_pw();
 				}
@@ -158,7 +165,14 @@ $(document).ready(function(){
 		});
 	});
 
-	var mydialog1;
+	mydialog1  = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
+		title: t("importer", "Enter master password"),
+		autoOpen: false,
+		modal: true,
+		dialogClass: "no-close my-dialog",
+		buttons: buttons1
+	});
+	
 	var buttons1 = {};
 	buttons1[t("importer", "OK")] = function() {
 		pw_ok_func();
@@ -174,13 +188,6 @@ $(document).ready(function(){
 			input_field.val(orig_val);
 		}
  	};
- mydialog1 = $("#oc_pw_dialog").dialog({//create dialog, but keep it closed
-		title: t("importer", "Enter master password"),
-		autoOpen: false,
-		modal: true,
-		dialogClass: "no-close my-dialog",
-		buttons: buttons1
-	});
 
 	$("#oc_pw_dialog input#importer_pw").keypress(function (e) {
 		//alert(e.which);
@@ -188,13 +195,13 @@ $(document).ready(function(){
 			pw_ok_func();
 		}
 		else{
-            $("body").dialog('close');
-        }
+			$("body").dialog('close');
+		}
 	});
 
 	$("fieldset#importerPersonalSettings #importer_settings_submit").bind('click', function(){
-		if(importer_pw_ok){
-			submit_form();
+		if(importer_pw_ok || $('.importer_pr .password:empty').length==$('.importer_pr .password').length){
+			submit_importer_form();
 		}
 		else{
 			submitting = true;
@@ -202,7 +209,7 @@ $(document).ready(function(){
 			$("span.ui-button-text:contains('OK')").css("background-color", "#E6E6E6");
 			$("#oc_pw_dialog").on( "dialogclose", function( event, ui ) {
 				if(importer_pw_ok){
-					submit_form();
+					submit_importer_form();
 				}
 			});
 		}
