@@ -407,7 +407,7 @@ class OC_importer {
 		$masterPw = self::my_decrypt($encMasterPw, $sessionPwHash);
 		return $masterPw;
 	}
-	
+
 	public static function decryptPw($enc_pw, $master_pw=false){
 		$masterPw = $master_pw?$master_pw:self::getMasterPw();
 		$hashedMasterPw = md5($masterPw);
@@ -419,4 +419,19 @@ class OC_importer {
 		return $ret;
 	}
 
+	public static function getGetUrl(){
+		if(empty($_GET['url'])){
+			return "";
+		}
+		return $_GET['url'];
+	}
+
+	public static function getPostUrls(){
+		if(empty($_POST['urls'])){
+			return [];
+		}
+		$urls = json_decode($_POST['urls']);
+		return $urls;
+	}
+	
 }

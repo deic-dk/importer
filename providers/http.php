@@ -53,7 +53,7 @@ error_reporting(6135);
 	</head>
 	<body>
 		<?php
-		$group = array_key_exists('g', $_GET)?urldecode(trim($_GET['g'])):'';
+		$group = array_key_exists('g', $_GET)?$_GET['g']:'';
 		if(OCP\App::isEnabled('user_group_admin') && !empty($group)){
 			// Allow ingesting to group folders
 			$user = \OC_User::getUser();
@@ -70,12 +70,12 @@ error_reporting(6135);
 		echo '</div>';
 		$dl->pb->setText($l->t('Preparing...'));
 		
-		$pr = array_key_exists('p', $_GET)?urldecode(trim($_GET['p'])):'';
-		$url = array_key_exists('u', $_GET)?urldecode(trim($_GET['u'])):'';
-		$ow = array_key_exists('o', $_GET)?urldecode(trim($_GET['o'])):'';
-		$kd = array_key_exists('k', $_GET)?urldecode(trim($_GET['k'])):'';
-		$mp = array_key_exists('m', $_GET)?urldecode(trim($_GET['m'])):'';
-		$dir = array_key_exists('d', $_GET)?urldecode(trim($_GET['d'])):'';
+		$pr = array_key_exists('p', $_GET)?$_GET['p']:'';
+		$url = array_key_exists('u', $_GET)?$_GET['u']:'';
+		$ow = array_key_exists('o', $_GET)?$_GET['o']:'';
+		$kd = array_key_exists('k', $_GET)?$_GET['k']:'';
+		$mp = array_key_exists('m', $_GET)?$_GET['m']:'';
+		$dir = array_key_exists('d', $_GET)?$_GET['d']:'';
 		
 		if(strcmp(substr($url,0,7), 'http://') != 0 && strcmp(substr($url,0,8), 'https://') != 0){
 			$url = 'http://'.$url;
@@ -89,7 +89,8 @@ error_reporting(6135);
 			$path = urlencode($purl['path']);
 			$path = str_replace('%2F', '/', $path);
 			//$path = str_replace('+' , '%20' , $path);
-			$furl = $purl['scheme'].'://'.$purl['host'].(isset($purl['port'])?':'.$purl['port']:'').$path;
+			$furl = $purl['scheme'].'://'.$purl['host'].(isset($purl['port'])?':'.$purl['port']:'').$path.
+				(empty($purl['query'])?'':'?'.$purl['query']);
 			if(!preg_match('/^pr_([0-9]{1,4})$/', $pr, $m)){
 				$dl->pb->setError($l->t('Unknown provider') . ": " . $pr);
 			}

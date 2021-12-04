@@ -55,7 +55,7 @@ div.dlbtn button.ui-button-text-only .ui-button-text {
 #importer div#dllist div.elts{margin:10px 0 10px 0;}
 #folder_pop div.elts{margin:0 0 10px 0;}
 #folder_pop{width:740px;height:34px;}
-#importer div#dllist div.elts input.url{width:520px;margin:4px 0 0 5px;height:14px;}
+#importer div#dllist div.elts input.url{width:/*520px*/58%;margin:4px 0 0 5px;height:14px;}
 #folder_pop div.elts span.urlc input.url{width:360px;margin:4px 0 0 5px;height:14px;}
 #folder_pop div.elts span.load button{margin:2px 2px 6px 2px;}
 #save_pop div.elts span.urlc input.url{width:260px;margin:4px 10px 0 5px;height:14px;}

@@ -34,6 +34,8 @@ class OC_importerHTTP {
 	protected static $USER_AGENT = 'curl/7.21.2 (i386-pc-win32) libcurl/7.21.2 OpenSSL/0.9.8o zlib/1.2.5';
 	protected static $PROVIDER_NAME = 'HTTP';
 	protected $filesDir;
+	private $cafile;
+	private static $WGET = "/usr/local/bin/wget";
 	
 	function __construct($b = FALSE, $filesDir = null) {
 		$this->batch = $b;
@@ -48,6 +50,7 @@ class OC_importerHTTP {
 		else{
 			$this->filesDir = $filesDir;
 		}
+		$this->cafile = \OCP\Config::getSystemValue('wscacertificate', '');
 	}
 
 	function __destruct() {
@@ -90,12 +93,11 @@ class OC_importerHTTP {
 		$out = array();
 		$tmpdir = OC_importer::mktmpdir();
 		# First check if we can crawl using index.html files
-		$cmd = "/usr/local/bin/wget --no-check-certificate ".$user_str1." ".$password_str1." -P $tmpdir -r -l 5 -nH --cut-dirs=5 --no-parent --spider --reject='index.html\*' -e robots=off --server-response '".$folderurl."' 2>&1 | grep -r '^--' | grep -rv '/?' | grep -v '/$' | sed 's|.* http://|http://|' | sed 's|.* https://|https://|' | grep  '^http'";
+		$cmd = self::$WGET." --no-check-certificate ".$user_str1." ".$password_str1." -P $tmpdir -r -l 5 -nH --cut-dirs=5 --no-parent --spider --reject='index.html\*' -e robots=off --server-response '".$folderurl."' 2>&1 | grep -r '^--' | grep -rv '/?' | grep -v '/$' | sed 's|.* http://|http://|' | sed 's|.* https://|https://|' | grep  '^http'";
 		OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
 		exec($cmd, $out, $ret);
 		shell_exec("rmdir ".$tmpdir);
 		# Now try if webdav is supported
-
 		if(empty($out)){
 			$cmd = OC_App::getAppPath('importer')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
 			OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
@@ -125,7 +127,7 @@ class OC_importerHTTP {
 		 ini_set('user_agent', self::$USER_AGENT);
 
 		try{
-			if(preg_match('/^file:\/\/.+$/', $url)){
+			if(preg_match('/^file:.+$/', $url)){
 				throw new Exception("Security violation.");
 			}
 			
@@ -133,9 +135,19 @@ class OC_importerHTTP {
 			$fs = new \OC\Files\View($this->filesDir);
 			
 			$dl_dir = strlen($dir)==0?OC_importer::getDownloadFolder():( $dir[0]==='/'?$dir:OC_importer::getDownloadFolder()."/".$dir);
-			
+			OC_Log::write('importer','Getting: '.$url, OC_Log::WARN);
 			$parsed_url = parse_url($url);
+			// When downloading from a standard apache with index.html in directories, the url path typically reflects the
+			// path on the hard disk which you want to replicate.
+			// We allow for overriding this with a path GET parameter in the url.
+			// Notice that we assume the path argument will be urlencoded twice
 			$rpathinfo = pathinfo(urldecode($parsed_url['path']));
+			if(!empty($parsed_url['query'])){
+				parse_str($parsed_url['query'], $get_array);
+				if(!empty($get_array['path'])){
+					$rpathinfo = pathinfo(urldecode(urldecode($get_array['path'])));
+				}
+			}
 			$filename = $rpathinfo['basename'];
 
 			if($preserveDir){
@@ -156,7 +168,17 @@ class OC_importerHTTP {
 				}
 			}
 
-		  $user_info = OC_importer::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
+			$user_info = OC_importer::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
+
+			$purl = parse_url($url);
+			
+			$cookieHeader = "";
+			// Reuse possible auth cookies if we're getting from ourself
+			OC_Log::write('importer','Looking for cookie: '.$purl['host'].'-->'.self::isInMyDomain($purl['host']).':'.serialize($_COOKIE), OC_Log::WARN);
+			if(self::isInMyDomain($purl['host']) && !empty($_COOKIE['public_link_authenticated'])){
+				$cookieHeader = 'Cookie: public_link_authenticated='.$_COOKIE['public_link_authenticated'];
+				OC_Log::write('importer','Using cookie: '.$cookieHeader, OC_Log::WARN);
+			}
 
 			$code = 0;
 			if(!$this->checkFileAccess($url, $code, $user_info)){
@@ -165,12 +187,19 @@ class OC_importerHTTP {
 				}
 			}
 
-			$size = $this->getRemoteFileSize($url, $user_info);
-			if($size == 0){
-				$size = $this->getRemoteFileSize($url, $user_info, FALSE);
-				if($size == 0){
+			$check = $this->checkRemoteFile($url, $user_info, true, $cookieHeader);
+			$size = $check['size'];
+			if($size==0){
+				$check = $this->checkRemoteFile($url, $user_info, false, $cookieHeader);
+				$size = $check['size'];
+				if($size==0){
 					throw new Exception($l->t('File size is 0. ').$url);
 				}
+			}
+
+			$location =  $check['location'];
+			if(!empty($location)){
+				$url = $location;
 			}
 			
 			$skip_file = FALSE;
@@ -178,7 +207,7 @@ class OC_importerHTTP {
 				if(!$overwrite){
 					$filename = md5(rand()) . '_' . $filename;
 				}
-				
+
 				elseif($overwrite==='auto' && $fs->filesize($dl_dir . "/" . $filename)===$size){
 					OC_Log::write('importer','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
 					$skip_file = TRUE;
@@ -187,16 +216,12 @@ class OC_importerHTTP {
 				  OC_Log::write('importer','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
 				}
 			}
-			
-			$fs = $fs->fopen($dl_dir . "/" . $filename, 'w');
-			
-		  OC_Log::write('importer','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
-			
-			
-			$chunkSize = self::getChunkSize($size);
-			
+
 			$purl = parse_url($url);
 
+			OC_Log::write('importer','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename.
+					", PRESERVEDIR: ".$preserveDir.", SIZE: ".$size.", COOKIE: ".$cookieHeader, OC_Log::WARN);
+			
 			$context = NULL;
 			if(preg_match('/^(https*:\/\/)([^@]+):([^@]+)@(.+)$/', $url, $m)){
 				$url = $m[1].$m[4];
@@ -206,72 +231,123 @@ class OC_importerHTTP {
 			if(preg_match('/^(https*):\/\/([^@]+)$/', $url, $m) && !empty($user_info) && !isset($purl['user']) && isset($user_info['us_username'])){
 				$auth = $this->getAuthHeader($user_info);
 				$opts = array (
-				        	'http' => array (
-					          'method' => "GET",
-					          'header' => $auth,
-					          'user_agent' => self::$USER_AGENT,
-					          'max_redirects' => '10',
-				        	),
-				        	'ssl'=>array(
-				        		'verify_peer' => true,
-				        		'verify_peer_name' => true,
-				        		'cafile' => __DIR__.'/cacert.pem'
-				        	)
+					'http' => array(
+					'method' => 'GET',
+					'header' => array($auth."\r\n",
+														$cookieHeader."\r\n",
+														"If-Modified-Since: Sun, 10 May 1900 02:01:00 GMT"),
+					'user_agent' => self::$USER_AGENT,
+					'follow_location' => 1,
+					'max_redirects' => 10,
+				 ),
+				 'ssl'=>array(
+				 	'verify_peer' => true,
+				 	'verify_peer_name' => true,
+				 	'cafile' => $this->cafile
+				 )
 				);
 			}
 			else{
 				$opts = array (
-					        'http' => array (
-					          'method' => "GET",
-					          'user_agent' => self::$USER_AGENT,
-					          'max_redirects' => '10',
-				        	),
-							'ssl'=>array(
-								'verify_peer' => true,
-								'verify_peer_name' => true,
-								'cafile' =>  __DIR__.'/cacert.pem'
-							)
-						
+					'http' => array (
+					'method' => 'GET',
+					'user_agent' => self::$USER_AGENT,
+					'follow_location' => 1,
+					'max_redirects' => 10,
+					'header' => array($cookieHeader."\r\n",
+														"If-Modified-Since: Sun, 10 May 1900 02:01:00 GMT\r\n")
+					),
+					'ssl'=>array(
+					'verify_peer' => true,
+					'verify_peer_name' => true,
+					'cafile' => $this->cafile
+					)
 				);
 			}
 			$context = stream_context_create($opts);
 
-		  if(!($fp = fopen($url, 'rb', FALSE, $context))){
+			$randomStr = md5(uniqid(rand(), true));
+			$url = $url.(strpos($url, '?')!==false?'&':'?').$randomStr;
+			OC_Log::write('importer', 'Opening '.$url, OC_Log::INFO);
+			if(!($fp = fopen($url, 'rb', false, $context))){
 				throw new Exception('Failed opening URL' . stream_get_meta_data($fp));
-		  }
-		  
-			$received = $last = 0;
-			$start_time = microtime(TRUE);
-			while(!$skip_file && !feof($fp)){
-				$data = @fread($fp, $chunkSize);
-				if($skip_file || $data == null || $data == '' || $data == 'null'){
-					break;
+			}
+			
+			// Use filename from header if present
+			$realfilename = "";
+			if(!empty($http_response_header)){
+				foreach($http_response_header as $header){
+					if(preg_match("|^Content-Disposition:.*[; ]filename=['\"]([^'\"]+)['\"]|", $header, $filename_str)){
+						$realfilename = $filename_str[1];
+						OC_Log::write('importer', 'Got header '.$url.'-->'.$header.'-->'.$realfilename, OC_Log::WARN);
+						break;
+					}
 				}
-				$saved = fwrite($fs, $data);
-				if($saved > -1){
-					$received += $saved;
-				}
-				if($received >= $size){
-					$percent = 100;
-				}
-				else{
-					$percent = @round(($received/$size)*100, 2);
-				}
-				if($received > $last + $chunkSize){
-					if(!$this->batch){
-						$this->pb->setProgressBarProgress($percent);
-						//OC_Log::write('importer', $percent, OC_Log::WARN);
+				if(!empty($realfilename) && !empty(trim(trim($realfilename, "/"))) && $fs->file_exists($dl_dir . "/" . $realfilename)){
+					if(!$overwrite){
+						$realfilename = md5(rand()) . '_' . $realfilename;
+						$fs->rename($dl_dir . "/" . $filename, $dl_dir . "/" . $realfilename);
+					}
+					elseif($overwrite==='auto' && $fs->filesize($dl_dir . "/" . $realfilename)===$size){
+						OC_Log::write('importer','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $realfilename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
+						$fs->unlink($dl_dir . "/" . $filename);
 					}
 					else{
-						if($verbose){
-							print($percent."%\n");
-							flush();
+						OC_Log::write('importer','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $realfilename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
+						if(!empty($realfilename) && !empty($filename) && !empty($dl_dir)){
+							$fs->rename($dl_dir . "/" . $filename, $dl_dir . "/" . $realfilename);
 						}
 					}
-					$last = $received;
 				}
-				usleep(100);
+				if(!empty($realfilename)){
+					$filename = $realfilename;
+				}
 			}
+
+			$fh = $fs->fopen($dl_dir . "/" . $filename, 'w');
+			$chunkSize = self::getChunkSize($size);
+
+			$received = $last = 0;
+			$start_time = microtime(TRUE);
+
+			OC_Log::write('importer', 'Opened '.$url.':'.serialize(stream_get_meta_data($fp)), OC_Log::DEBUG);
+
+			if(!$skip_file){
+				while(!feof($fp)){
+					OC_Log::write('importer', 'Reading '.$chunkSize, OC_Log::INFO);
+					$data = @fread($fp, $chunkSize);
+					if($skip_file || $data===null || $data===false || $data==='' /*|| $data==='null'*/){
+						OC_Log::write('importer', 'Breaking here: '.$data, OC_Log::WARN);
+						break;
+					}
+					$saved = fwrite($fh, $data);
+					if($saved > -1){
+						$received += $saved;
+					}
+					if($received >= $size){
+						$percent = 100;
+					}
+					else{
+						$percent = @round(($received/$size)*100, 2);
+					}
+					if($received > $last + $chunkSize){
+						if(!$this->batch){
+							$this->pb->setProgressBarProgress($percent);
+							//OC_Log::write('importer', $percent, OC_Log::WARN);
+						}
+						else{
+							if($verbose){
+								print($percent."%\n");
+								flush();
+							}
+						}
+						$last = $received;
+					}
+					usleep(100);
+				}
+			}
+			OC_Log::write('importer', 'Done. Updating cache for '.$dl_dir . "/" . $filename, OC_Log::DEBUG);
+			
 			$cacheUpdater = new \OC\Files\Cache\Updater($fs);
 			$cacheUpdater->update($dl_dir . "/" . $filename);
 			$end_time = microtime(TRUE);
@@ -285,7 +361,7 @@ class OC_importerHTTP {
 				print(($skip_file?"Skipped":"Done")." (size: ".$size." bytes, time: ".$spent_time." s, speed: ".$mbps." MB/s, chunksize: ".$chunkSize.")\n");
 			}
 			fclose($fp);
-			fclose($fs);
+			fclose($fh);
 		}
 		catch(exception $e){
 			if(!$this->batch){
@@ -304,18 +380,24 @@ class OC_importerHTTP {
 	 * @param $head whether or not to use HEAD instead of GET
 	 * @return The cURL result
 	 */
-	protected function execURL($url, $user_info = NULL, $head = TRUE){
+	protected function execURL($url, $user_info = NULL, $head = TRUE, $cookieHeader=""){
 		$url = str_replace(Array(" ", "\r", "\n"), Array("%20"), $url);
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_HEADER, TRUE);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-    curl_setopt($ch, CURLOPT_FAILONERROR, FALSE);
-    curl_setopt($ch, CURLOPT_FORBID_REUSE, TRUE);
-    curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Accept-Language: en-us;q=0.7,en;q=0.3", "Accept-Charset: utf-8,windows-1251;q=0.7,*;q=0.7", "Pragma: no-cache", "Cache-Control: no-cache", "Connection: Close", "User-Agent: ".self::$USER_AGENT));
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+		curl_setopt($ch, CURLOPT_FAILONERROR, FALSE);
+		curl_setopt($ch, CURLOPT_FORBID_REUSE, TRUE);
+		curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+		$headerArray =  Array("Accept-Language: en-us;q=0.7,en;q=0.3",
+				"Accept-Charset: utf-8,windows-1251;q=0.7,*;q=0.7", "Pragma: no-cache",
+				"Cache-Control: no-cache", "Connection: Close", "User-Agent: ".self::$USER_AGENT);
+		if(!empty($cookieHeader)){
+			$headerArray[] = $cookieHeader;
+		}
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headerArray);
 		curl_setopt($ch, CURLOPT_NOBODY, $head);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); 
 		curl_setopt($ch, CURLOPT_TIMEOUT, 120);
@@ -347,18 +429,26 @@ class OC_importerHTTP {
 	 * @param $head whether or not to use HEAD instead of GET
 	 * @return Int Size of the remote file 
 	 */
-	private function getRemoteFileSize($remoteFile, $user_info, $head = TRUE){
-		OC_Log::write('importer','Checking size of: '.$remoteFile, OC_Log::WARN);
-		$data = $this->execURL($remoteFile, $user_info, $head);
-		if($data === false){
-			return 0;
+	private function checkRemoteFile($remoteFile, $user_info, $head = true, $cookieHeader=""){
+		$data = $this->execURL($remoteFile, $user_info, $head, $cookieHeader);
+		if($data===false){
+			return [];
 		}
-		
 		$contentLength = 0;
-		if(preg_match('/content-length: (\d+)/i', $data, $m)){
-		  	$contentLength = (int)$m[1];
+		$location = "";
+		// Grab the last Content-Length + Location header
+		foreach(preg_split("/((\r?\n)|(\r\n?))/", $data) as $line){
+			if(preg_match('/^Content-Length: (\d+)$/i', $line, $m)){
+				$contentLength = (int)$m[1];
+			}
+			if(preg_match('/^Location: (.+)$/i', $line, $m)){
+				if(!empty(trim($m[1]))){
+					$location = trim($m[1]);
+				}
+			}
 		}
-		return $contentLength;
+		OC_Log::write('importer','Checked: '.$remoteFile.'-->'.$contentLength.'-->'.$location.'-->'.$cookieHeader, OC_Log::WARN);
+		return ['size'=>$contentLength, 'location'=>$location];
 	}
 
 	/**
@@ -437,6 +527,16 @@ class OC_importerHTTP {
 	        return 4096*200;
 	    }
 	    return 4096*210;
+	}
+	
+	private static function isInMyDomain($hostname){
+		if(empty($hostname)){
+			return false;
+		}
+		$mydomain = preg_replace('|^[^\.]+\.|', '', $_SERVER['HTTP_HOST']);
+		$mydomain1 = preg_replace('|^[^\.]+\.|', '', $_SERVER['SERVER_NAME']);
+		OC_Log::write('importer','Domain check: '.$mydomain.':'.$mydomain1.':'.$hostname, OC_Log::WARN);
+		return $hostname==$mydomain || preg_match('|.*\.'.$mydomain.'$|', $hostname) || preg_match('|.*\.'.$mydomain1.'$|', $hostname);
 	}
 	
 	private static $http_codes = array(

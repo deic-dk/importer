@@ -80,7 +80,7 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 		<span class="urlc" title="<?php p($l->t('URL of the folder to download')); ?>">
 			<input id="folderurl" type="text" class="url" value="" placeholder="<?php p($l->t('Folder URL')); ?>" />
 		</span>
-		<span class="load" title="<?php p($l->t('List content of folder')); ?>">
+		<span class="load" title="<?php p($l->t('List content of folder. Typically works only with standard web servers etc.')); ?>">
 			<button id="loadFolder"><?php p($l->t('Scan')); ?></button>
 		</span>
 		<span class="dling"></span>
@@ -119,7 +119,7 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 				</span>
 				<input type="checkbox" value="0" class="slider-check" />
 				<span class="urlc" title="<?php p($l->t('URL of the file to download')); ?>">
-					<input type="text" class="url" value="" placeholder="<?php p($l->t('File URL')); ?>" />
+					<input type="text" class="url" value="<?php echo($_['get_url']); ?>" placeholder="<?php p($l->t('File URL')); ?>" />
 				</span>
 				<button class="addelt" title="<?php p($l->t('Add another download'));?>">+</button>
 				<span class="dling"></span>
@@ -143,6 +143,11 @@ OCP\Util::addscript('chooser', 'jqueryFileTree');
 			<button class="addelt" title="<?php p($l->t('Add another download'));?>">+</button>
 			<span class="dling"></span>
 		</div>
+		<?php if(!empty($_['post_urls'])){ ?>
+			<div id="postUrls" class="hidden">
+				<?php echo(json_encode($_['post_urls'])); ?>
+			</div>
+		<?php } ?>
 	<?php } ?>
 	<div id="divhisto" class="personalblock">
 		<?php $status = Array($l->t('Unknown error'),$l->t('OK')); 

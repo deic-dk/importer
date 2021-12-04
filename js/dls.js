@@ -212,8 +212,8 @@ function getProvider(el){
 							group = '';
 						}
 						// Do the actual download
-						var iframeUri = OC.linkTo('importer','providers/'+s.n+'.php?u='+u+'&p='+p+'&k='+(el.find('input.slider-check').attr("checked")?1:0)+
-								'&o=1'+'&d='+dlFolder+'&g='+group);
+						var iframeUri = OC.linkTo('importer','providers/'+s.n+'.php?u='+encodeURIComponent(u)+'&p='+p+'&k='+(el.find('input.slider-check').attr("checked")?1:0)+
+								'&o=1'+'&d='+encodeURIComponent(dlFolder)+'&g='+encodeURIComponent(group));
 						iframe.load(function(){
 							var n_str = el.attr('id').replace('elt_','');
 							var new_n = parseInt(n_str)+1;
@@ -730,7 +730,9 @@ $(document).ready(function(){
 		loadFolderUrl();
 	});
 	
-	$("#geturl").attr("disabled", "disabled");
+	if(!$('#dllist .elts .url[val!=""]').length && !$('#postUrls').length){
+		$("#geturl").attr("disabled", "disabled");
+	}
 	$('.elts.new .urlc input.url').each(function(el){
 		$(this).on('input', function(){
 			if($("#geturl").attr("disabled")=="disabled"){
@@ -738,6 +740,16 @@ $(document).ready(function(){
 			}
 		});
 	});
+	
+	if($('#postUrls').length){
+		var postUrls = JSON.parse($('#postUrls').text());
+		// We're assuming the first provider is HTTP
+		addFirstDownload(postUrls.shift(), 'pr_1', true);
+		$.each(postUrls, function(i, url){
+			addDownload(true, url, 'pr_1', true);
+		});
+		$('.addelt:visible:not(:last)').remove();
+	}
 
 	var mydialog1;
 	var buttons1 = {};

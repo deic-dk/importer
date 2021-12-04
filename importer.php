@@ -32,12 +32,14 @@ $tmpl = new OCP\Template('importer', 'importer.tpl', 'user');
 // Get user importer settings
 if(!in_array('curl', get_loaded_extensions())){
 	$tmpl->assign('curl_error', TRUE);
-}else{
+}
+else{
 	$l = new OC_L10N('importer');
-	
 	$tmpl->assign('user_prov_set', OC_importer::getProvidersList());
 	$tmpl->assign('user_history', OC_importer::getUserHistory($l));
 	$tmpl->assign('download_folder', OC_importer::getDownloadFolder());
+	$tmpl->assign('get_url', OC_importer::getGetUrl());
+	$tmpl->assign('post_urls', OC_importer::getPostUrls());
 }
 
 $tmpl->printPage();
