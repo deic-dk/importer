@@ -140,27 +140,28 @@ class OC_importerHTTP {
 			// When downloading from a standard apache with index.html in directories, the url path typically reflects the
 			// path on the hard disk which you want to replicate.
 			// We allow for overriding this with a path GET parameter in the url.
-			// Notice that we assume the path argument will be urlencoded twice
+			// Notice that we assume the path argument will be urlencoded
 			$rpathinfo = pathinfo(urldecode($parsed_url['path']));
+			$dirName = $rpathinfo['dirname'];
 			if(!empty($parsed_url['query'])){
 				parse_str($parsed_url['query'], $get_array);
 				if(!empty($get_array['path'])){
-					$rpathinfo = pathinfo(urldecode(urldecode($get_array['path'])));
+					$dirName = urldecode($get_array['path']);
 				}
 			}
 			$filename = $rpathinfo['basename'];
 
 			if($preserveDir){
-				$dirs = explode("/", $rpathinfo['dirname']);
+				$dirs = explode("/", $dirName);
 				$mydir = $dl_dir;
 				foreach($dirs as $dir){
 					$mydir = $mydir . "/" . $dir;
 					if(!$fs->file_exists($mydir)){
-					OC_Log::write('importer','Creating: '.$mydir, OC_Log::WARN);
+						OC_Log::write('importer','Creating: '.$mydir, OC_Log::WARN);
 						$fs->mkdir($mydir, 0755, true);
 					}
 				}
-				$dl_dir = $dl_dir . "/" . $rpathinfo['dirname'];
+				$dl_dir = $dl_dir . "/" . $dirName;
 				//$dl_dir = str_replace('~', '_', $dl_dir);
 				$dl_dir = preg_replace('/\/\/+/', '/', $dl_dir);
 				if(!$fs->is_dir($dl_dir)){
@@ -267,7 +268,9 @@ class OC_importerHTTP {
 			$context = stream_context_create($opts);
 
 			$randomStr = md5(uniqid(rand(), true));
-			$url = $url.(strpos($url, '?')!==false?'&':'?').$randomStr;
+			// I guess the below was to prevent getting cached files
+			//- but it also prevents getting files from https://sciencedata.dk/public/...
+			//$url = $url.(strpos($url, '?')!==false?'&':'?').$randomStr;
 			OC_Log::write('importer', 'Opening '.$url, OC_Log::INFO);
 			if(!($fp = fopen($url, 'rb', false, $context))){
 				throw new Exception('Failed opening URL' . stream_get_meta_data($fp));
@@ -278,7 +281,7 @@ class OC_importerHTTP {
 			if(!empty($http_response_header)){
 				foreach($http_response_header as $header){
 					if(preg_match("|^Content-Disposition:.*[; ]filename=['\"]([^'\"]+)['\"]|", $header, $filename_str)){
-						$realfilename = $filename_str[1];
+						$realfilename = urldecode($filename_str[1]);
 						OC_Log::write('importer', 'Got header '.$url.'-->'.$header.'-->'.$realfilename, OC_Log::WARN);
 						break;
 					}
