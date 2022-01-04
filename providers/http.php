@@ -86,8 +86,9 @@ error_reporting(6135);
 			$dl->pb->setError($l->t('URL error ...') . ": ".$url);
 		}
 		else{
-			$path = urlencode($purl['path']);
-			$path = str_replace('%2F', '/', $path);
+			$path = $purl['path'];
+			//$path = rawurlencode($path);
+			//$path = str_replace('%2F', '/', $path);
 			//$path = str_replace('+' , '%20' , $path);
 			$furl = $purl['scheme'].'://'.$purl['host'].(isset($purl['port'])?':'.$purl['port']:'').$path.
 				(empty($purl['query'])?'':'?'.$purl['query']);
