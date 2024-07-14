@@ -751,7 +751,7 @@ $(document).ready(function(){
 		$('.addelt:visible:not(:last)').remove();
 	}
 
-	var mydialog1;
+	//var mydialog1;
 	var buttons1 = {};
 	buttons1[t("importer", "OK")] = function() {
 		pw_ok_func();
