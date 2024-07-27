@@ -36,8 +36,8 @@ class OC_importer {
 
 	
 	/**
-	 * Get user provider settings
-	 * @param $active get active (1) providers or inactive (0) providers
+	 * Get providers
+	 * @param $active get active (1) providers, inactive (0) or all (-1) providers
 	 * @return Array
 	 */
 	public static function getProvidersList($active = 1){
@@ -105,17 +105,24 @@ class OC_importer {
 	/**
 	 * Get User provider username and password
 	 * @param $pr_id Provider id or name
+	 * @param $us_hostname hostname
 	 * @param $master_pw Master password
 	 * @return Array
 	 */
-	public static function getUserProviderInfo($pr_id, $master_pw = NULL){
+	public static function getUserProviderInfo($pr_id, $us_hostname = "", $master_pw = null){
 		$pr_name = $pr_id;
 		if(preg_match('/^[0-9]+$/', $pr_id )){
 			$pr = self::getProvider($pr_id);
 			$pr_name = $pr['pr_name'];
 		}
-		$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
-		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
+		if(empty($us_hostname)){
+			$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
+			$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
+		}
+		else{
+			$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?");
+			$result = $query->execute(Array(OCP\User::getUser(), $pr_name, $us_hostname))->fetchRow();
+		}
 		if($result){
 			$result['us_password'] = self::decryptPw($result['us_password'], $master_pw);
 			return $result;
@@ -126,17 +133,24 @@ class OC_importer {
 		/**
 	 * Get User provider username and encrypted password
 	 * @param $pr_id Provider id or name
+	 * @param $us_hostname hostname
 	 * @return Array
 	 */
-	public static function getUserProviderInfoRaw($pr_id){
+	public static function getUserProviderInfoRaw($pr_id, $us_hostname=""){
 		$pr_name = $pr_id;
 		if(preg_match('/^[0-9]+$/', $pr_id )){
 			$pr = self::getProvider($pr_id);
 			$pr_name = $pr['pr_name'];
 		}
-		$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
-		OC_Log::write('importer',"Query: ".OCP\User::getUser(). ":" . $pr_name, OC_Log::WARN);
-		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
+		if(empty($us_hostname)){
+			$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
+			$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
+		}
+		else{
+			$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?");
+			$result = $query->execute(Array(OCP\User::getUser(), $pr_name, $us_hostname))->fetchRow();
+		}
+		OC_Log::write('importer',"Query: ".OCP\User::getUser(). ":" . $pr_name. ":" . $us_hostname, OC_Log::WARN);
 		if($result){
 			return $result;
 		}
@@ -144,15 +158,16 @@ class OC_importer {
 	}
 	
 	/**
-	 * Get a list of providers in the database
+	 * Get a list of user-defined providers in the database
 	 * @return Array
 	 */
 	public static function getUserProvidersList($auth = 0, $active = 1){
 		if($auth){
-			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_username, u.us_password FROM *PREFIX*importer_providers p LEFT OUTER JOIN *PREFIX*importer_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ? OR u.oc_uid IS NULL) WHERE p.pr_auth = ? AND p.pr_active = ?");
+			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_hostname, u.us_username, u.us_password FROM *PREFIX*importer_providers p LEFT OUTER JOIN *PREFIX*importer_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ?) WHERE p.pr_auth = ? AND p.pr_active = ? AND u.oc_uid != ''");
 			$result = $query->execute(Array(OCP\User::getUser(), $auth, $active))->fetchAll();
-		}else{
-			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_username, u.us_password FROM *PREFIX*importer_providers p LEFT OUTER JOIN *PREFIX*importer_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ? OR u.oc_uid IS NULL) WHERE p.pr_active = ?");
+		}
+		else{
+			$query = OCP\DB::prepare("SELECT p.pr_id, p.pr_name, u.us_id, u.us_hostname, u.us_username, u.us_password FROM *PREFIX*importer_providers p LEFT OUTER JOIN *PREFIX*importer_users_settings u ON p.pr_name = u.pr_fk AND (u.oc_uid = ?) WHERE p.pr_active = ? AND u.oc_uid != ''");
 			$result = $query->execute(Array(OCP\User::getUser(), $active))->fetchAll();
 		}
 		if(count($result) > 0){
@@ -167,8 +182,8 @@ class OC_importer {
 	 * @return Array
 	 */
 	public static function getDownloadFolder($raw = 0){
-		$query = OCP\DB::prepare("SELECT u.us_download_folder FROM *PREFIX*importer_users_settings u WHERE u.oc_uid = ?");
-		$result = $query->execute(Array(OCP\User::getUser()))->fetchAll();
+		$query = OCP\DB::prepare("SELECT u.us_download_folder FROM *PREFIX*importer_users_settings u WHERE u.oc_uid = ? AND u.pr_fk = ?");
+		$result = $query->execute(Array(OCP\User::getUser(), self::$downloadFolderTag))->fetchAll();
 		$folder = '';
 		if(count($result) > 0){
 		  $folder = trim($result[0]["us_download_folder"]);
@@ -178,40 +193,46 @@ class OC_importer {
 	
 	/**
 	 * UPDATE user provider info
-	 * @param $pr_id The provider name
+	 * @param $pr_id ID of the provider
 	 * @param $username The user provider username
 	 * @param $pw The user provider password
+	 * @param $enc 1 if the password is encryptd, 0 if not
 	 */
-	public static function updateUserInfo($pr_id, $username, $cleartext_pw){
-		$pw = self::encryptPw($cleartext_pw);
-		if(!$pw){
-			return false;
+	public static function updateUserInfo($pr_id, $hostname, $username, $newpw, $enc){
+		if($enc==0){
+			$pw = self::encryptPw($newpw);
+			if(!$pw){
+				return false;
+			}
+		}
+		else{
+			$pw = $newpw;
 		}
 		$pr = self::getProvider($pr_id);
 		$pr_name = $pr['pr_name'];
-		$str = "SELECT us_id FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?";
+		$str = "SELECT us_id FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?";
 		$query = OCP\DB::prepare($str);
 		OC_Log::write('importer', "Executing query: ".$str, OC_Log::WARN);
-		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
+		$result = $query->execute(Array(OCP\User::getUser(), $pr_name, $hostname))->fetchRow();
 		if($result){
-			$query = OCP\DB::prepare("UPDATE *PREFIX*importer_users_settings SET us_username = ?, us_password = ? WHERE oc_uid = ? AND pr_fk = ?");
-			return $query->execute(Array($username, $pw, OCP\User::getUser(), $pr_name));
+			$query = OCP\DB::prepare("UPDATE *PREFIX*importer_users_settings SET us_username = ?, us_password = ? WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?");
+			return $query->execute(Array($username, $pw, OCP\User::getUser(), $pr_name, $hostname));
 		}
 		else{
-			$query = OCP\DB::prepare("INSERT INTO *PREFIX*importer_users_settings (oc_uid,pr_fk,us_username,us_password) VALUES (?,?,?,?)");
-			return $query->execute(Array(OCP\User::getUser(), $pr_name, $username, $pw));
+			$query = OCP\DB::prepare("INSERT INTO *PREFIX*importer_users_settings (oc_uid,pr_fk,us_hostname,us_username,us_password) VALUES (?,?,?,?,?)");
+			return $query->execute(Array(OCP\User::getUser(), $pr_name, $hostname, $username, $pw));
 		}
 	}
 	
 	public static function updateDownloadFolder($downloadFolder){
-	  $downloadFolder = trim($downloadFolder);
-	  if($downloadFolder!='' && $downloadFolder[0]!='/'){
-	    $downloadFolder = '/' . $downloadFolder;
-	  }
-	  $query = OCP\DB::prepare("SELECT us_download_folder FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
-	  $result = $query->execute(Array(OCP\User::getUser(), self::$downloadFolderTag))->fetchRow();
-	  OC_Log::write('importer', "Setting download folder: ".$downloadFolder, OC_Log::WARN);
-	  if($result){
+		$downloadFolder = trim($downloadFolder);
+		if($downloadFolder!='' && $downloadFolder[0]!='/'){
+			$downloadFolder = '/' . $downloadFolder;
+		}
+		OC_Log::write('importer', "Setting download folder: ".$downloadFolder, OC_Log::WARN);
+		$query = OCP\DB::prepare("SELECT us_download_folder FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
+		$result = $query->execute(Array(OCP\User::getUser(), self::$downloadFolderTag))->fetchRow();
+		if($result){
 			if($downloadFolder==''){
 				$query = OCP\DB::prepare("DELETE FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
 				$query->execute(Array(OCP\User::getUser(), self::$downloadFolderTag));
@@ -236,15 +257,15 @@ class OC_importer {
 	 * DELETE user provider info
 	 * @param $pr_id The provider id
 	 */
-	public static function deleteUserInfo($pr_id){
+	public static function deleteUserInfo($pr_id, $hostname){
 		$pr = self::getProvider($pr_id);
 		$pr_name = $pr['pr_name'];
-		$query = OCP\DB::prepare("SELECT us_id FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ?");
-		$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchAll();
+		$query = OCP\DB::prepare("SELECT us_id FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?");
+		$result = $query->execute(Array(OCP\User::getUser(), $pr_name, $hostname))->fetchAll();
 		if(count($result) > 0){
-			$query = OCP\DB::prepare("DELETE FROM *PREFIX*importer_users_settings WHERE us_id = ?");
+			$query = OCP\DB::prepare("DELETE FROM *PREFIX*importer_users_settings WHERE us_id = ? AND us_hostname = ?");
 			foreach($result as $row){
-				$query->execute(Array($row['us_id']));
+				$query->execute(Array($row['us_id'], $hostname));
 			}
 		}
 	}

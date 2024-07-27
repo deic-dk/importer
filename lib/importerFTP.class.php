@@ -150,12 +150,6 @@ class OC_importerFTP {
 			$user = "";
 			$pass = "";
 			
-			$user_info = OC_importer::getUserProviderInfo('FTP', $masterpw);
-			if(isset($user_info['us_username'])){
-				$user = $user_info['us_username'];
-				$pass = $user_info['us_password'];
-			}
-		
 			$url = parse_url($rurl);
 			$port = 0;
 			if(isset($url['port'])){
@@ -167,8 +161,17 @@ class OC_importerFTP {
 			if(isset($url['pass'])){
 				$pass = $url['pass'];
 			}
+			if(isset($url['host'])){
+				$host = $url['host'];
+			}
 			
-			if(!$this->connectToHost($url['scheme'], $url['host'], $port, $user, $pass)){
+			$user_info = OC_importer::getUserProviderInfo('FTP', $host, $masterpw);
+			if(isset($user_info['us_username'])){
+				$user = $user_info['us_username'];
+				$pass = $user_info['us_password'];
+			}
+			
+			if(!$this->connectToHost($url['scheme'], $host, $port, $user, $pass)){
 				throw new Exception($l->t('Connection failed'));
 			}
 			

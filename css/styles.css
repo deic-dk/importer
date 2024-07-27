@@ -53,7 +53,7 @@ div.dlbtn button.ui-button-text-only .ui-button-text {
 #importer div#folder_pop, #importer div#save_pop{background: none repeat scroll 0 0 #dddddd;}
 #importer div.personalblock.red{background-color: #FA5858;border:0 none;text-shadow:none;}
 #importer div#dllist div.elts{margin:10px 0 10px 0;}
-#folder_pop div.elts{margin:0 0 10px 0;}
+#folder_pop div.elts{margin:0 0 0 0;}
 #folder_pop{width:740px;height:34px;}
 #importer div#dllist div.elts input.url{width:/*520px*/58%;margin:4px 0 0 5px;height:14px;}
 #folder_pop div.elts span.urlc input.url{width:360px;margin:4px 0 0 5px;height:14px;}
@@ -81,7 +81,7 @@ ul.chzn-results{margin:0;padding:0;}
 #importer div#divhisto table th.col1, #importer div#divhisto table td.col1{width:60%;border-right:1px solid #DDD;padding:4px 4px 0 0;text-align:left;}
 #importer div#divhisto table th.col2, #importer div#divhisto table td.col2{width:20%;border-right:1px solid #DDD;padding:4px 4px 0 0;}
 #importer div#divhisto table th.col3, #importer div#divhisto table td.col3{width:20%;padding:4px 4px 0 0;}
-div#folder_pop{position:relative;display:none;padding:0 0.6em 2.6em 0.6em;}
+div#folder_pop{position:relative;display:none;padding:1.2em 0.6em 1.6em 0.6em;height:100%;}
 div#save_pop{width:550px;height:38px;}
 div#save_pop{position:relative;display:none;}
 button#clear_history{bottom: 1.3px;height:24px;font-size:11px;font-weight:normal;clear:right;float:right;padding: 3px 8px 8px;}

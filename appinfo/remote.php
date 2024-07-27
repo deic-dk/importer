@@ -102,17 +102,19 @@ header("Content-Type: application/json");
 
 $dest_dir = array_key_exists('dir', $_POST) ? $_POST['dir'] : $_GET['dir'];
 $url = array_key_exists('url', $_POST) ? $_POST['url'] : $_GET['url'];
-$provider = array_key_exists('provider', $_POST) ? $_POST['provider'] : $_GET['provider'];
 $overwrite = array_key_exists('overwrite', $_POST) ? $_POST['overwrite'] : array_key_exists('overwrite', $_GET)?$_GET['overwrite']:TRUE;
 $preserve = array_key_exists('preserve', $_POST) ? $_POST['preserve'] : array_key_exists('preserve', $_GET)?$_GET['preserve']:TRUE;
 $masterpw = array_key_exists('password', $_POST) ? $_POST['password'] : array_key_exists('password', $_GET)?$_GET['password']:'';
 $verbose = array_key_exists('verbose', $_POST) ? $_POST['verbose'] : array_key_exists('verbose', $_GET)?$_GET['verbose']:FALSE;
 
-require_once('importer/lib/importer'.$provider.'.class.php');
+$parsed_url = parse_url($url);
+$protocol = array_key_exists('protocol', $_REQUEST) ? $_REQUEST['protocol'] : $parsed_url['scheme'];
+$protocol = strtoupper($protocol);
+
+require_once('importer/lib/importer'.$protocol.'.class.php');
 
 $parsed_url = parse_url($url);
-$pathinfo = pathinfo($parsed_url['path']);
-$myprovider = 'OC_importer'.$provider;
+$myprovider = 'OC_importer'.$protocol;
 $l = new OC_L10N('importer');
 $dl = new $myprovider(TRUE, $filesDir);
 $dl->getFile($url, $dest_dir, $l, $overwrite, $preserve, $masterpw, $verbose);

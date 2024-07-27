@@ -4,7 +4,9 @@ OCP\JSON::checkAppEnabled('importer');
 OCP\JSON::checkLoggedIn();
 
 $folderurl = $_POST['url'];
-$provider = array_key_exists ('provider' , $_POST)?$_POST['provider']:"";
+$provider = array_key_exists('provider' , $_POST)?$_POST['provider']:"";
+$url = parse_url($folderurl);
+$hostname = $url['host'];
 
 OC_Log::write('importer',"Provider: ".$provider, OC_Log::WARN);
 
@@ -20,8 +22,7 @@ if(empty($provider)){
     }
   }
 }
-
-if(!empty($provider)){
+else{
 	foreach($providers as $p){
 		if($provider==='pr_'.$p['pr_id']){
 			$myprovider = $p['pr_name'];
@@ -30,8 +31,9 @@ if(!empty($provider)){
 	}
 }
 
+$m = "";
 if(!empty($provider) && preg_match('/^pr_([^_^&]+)$/', $provider, $m)){
-	$user_info = OC_importer::getUserProviderInfoRaw($m[1]);
+	$user_info = OC_importer::getUserProviderInfoRaw($m[1], $hostname);
 }
 else{
 	OC_Log::write('importer', "Bad format of provider ID: ".$provider, OC_Log::ERROR);

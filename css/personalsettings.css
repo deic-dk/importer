@@ -38,11 +38,56 @@ https://stackoverflow.com/questions/36935576/how-to-make-input-type-tel-work-as-
 }
 
 #content.app-settings input[type=text].numeric-password::placeholder {
-  font-family: initial;
+  font-family: "Open Sans";
 }
 
 .data_provider {
 	float:left;
-	width:100px;
+	width: 100px;
 	padding-top: 5px;
 }
+
+.importer_header {
+  height: 48px;
+}
+
+.importer_column_1 {
+  float:left;
+  display: inline-block;
+  width: 100px;
+  padding-top: 5px;
+}
+
+.importer_column_2 {
+  float:left;
+  display: inline-block;
+  width: 148px;
+  padding-top: 5px;
+}
+
+.importer_column_3 {
+  float:left;
+  width: 148px;
+  display: inline-block;
+  padding-top: 5px;
+}
+
+.importer_column_3 label {
+  font-weight: 300;
+}
+
+.importer_column_4 {
+  float:left;
+  width: 148px;
+  display: inline-block;
+  padding-top: 5px;
+}
+
+.importer_column_4 label {
+  font-weight: 300;
+}
+
+.add_importer_url {
+  margin-bottom: 12px;
+}
+

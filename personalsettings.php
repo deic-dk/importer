@@ -69,6 +69,7 @@ OC_Log::write('importer',"Decryption test: ".$ret, OC_Log::WARN);
 
 $tmpl = new OCP\Template('importer', 'personalsettings.tpl');
 $tmpl->assign('errors', $errors);
-$tmpl->assign('pr_list', OC_importer::getUserProvidersList(1));
-$tmpl->assign('us_download_folder', OC_importer::getDownloadFolder(1));
+$tmpl->assign('user_providers', OC_importer::getUserProvidersList(1));
+$tmpl->assign('download_folder', OC_importer::getDownloadFolder(1));
+$tmpl->assign('pr_list', OC_importer::getProvidersList(1));
 return $tmpl->fetchPage();

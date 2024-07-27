@@ -1,7 +1,7 @@
 <?php
  
 require_once('files/cache/updater.php');
-require_once('importer/lib/3rdparty/aws/aws-autoloader.php');
+//require_once('importer/lib/3rdparty/aws/aws-autoloader.php');
 use Aws\S3\S3Client;
 
 // See
@@ -64,13 +64,16 @@ class OC_importerS3 {
 	 * List directory contents recursively.
 	 * @param $url The URL of the directory whose content will be listed
 	 * @param $user_info credentials array (see importer.class.php)
+	 * @param $user_info credentials array (see importer.class.php)
 	 * @return array of paths. Each line should contain a file
 	 * 				 path, relative to $url and have a / at the end of directory names.
 	 */
-	public function lsDir($url){
+	public function lsDir($url, $user_info){
 		$user = "";
 		$pass = "";
-		$user_info = OC_importer::getUserProviderInfo('S3');
+		if(empty($user_info['us_password'])){
+			$user_info = OC_importer::getUserProviderInfo('S3', '');
+		}
 		if(isset($user_info['us_username'])){
 			$user = $user_info['us_username'];
 			$pass = $user_info['us_password'];
@@ -90,7 +93,7 @@ class OC_importerS3 {
 		$object_key = $purl['path'];
 		$object_key = preg_replace('/\/$/', '', $object_key);
 		$object_key = preg_replace('/^\//', '', $object_key);
-		OC_Log::write('importer','Path: '.$purl['path'].'. Bucket: '.$bucket.'. Key: '.$object_key, OC_Log::WARN);
+		OC_Log::write('importer','Path: '.$purl['path'].'. Bucket: '.$bucket.'. Path: '.$object_key.'. key: '.$user.'. secret: '.$pass, OC_Log::WARN);
 		$iterator = $client->getIterator('ListObjects', array(
 					'Bucket' => $bucket,
 					'Prefix'    => $object_key
@@ -114,14 +117,14 @@ class OC_importerS3 {
 	 * @param $masterpw Master password for the key store
 	 * @param $verbose
 	 */
-	public function getFile($url, $dir, $l, $overwrite = false, $preserveDir = false, $masterpw = NULL,
+	public function getFile($url, $dir, $l, $overwrite = false, $preserveDir = false, $masterpw = null,
 			$verbose=false){
 		try{
 		
 			$user = "";
 			$pass = "";
 			
-			$user_info = OC_importer::getUserProviderInfo('S3', $masterpw);
+			$user_info = OC_importer::getUserProviderInfo('S3', '', $masterpw);
 			if(isset($user_info['us_username'])){
 				$user = $user_info['us_username'];
 				$pass = $user_info['us_password'];

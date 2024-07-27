@@ -200,6 +200,9 @@ $(document).ready(function(){
 	});
 
 	$("fieldset#importerPersonalSettings #importer_settings_submit").bind('click', function(){
+		
+		
+		
 		if(importer_pw_ok || $('.importer_pr .password:empty').length==$('.importer_pr .password').length){
 			submit_importer_form();
 		}
@@ -215,5 +218,10 @@ $(document).ready(function(){
 		}
 	});
 
+	$('.add_importer_url').click(function(ev){
+		$(this).addClass('hidden');
+		$('#importer_pr_0_').removeClass('hidden');
+	});
+	
 });
 

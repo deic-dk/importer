@@ -121,8 +121,8 @@ class OC_importerHTTP {
 	 * @param $masterpw Master password for the key store
 	 * @param $verbose Whether or not to report progress
 	 */
-	public function getFile($url, $dir, $l, $overwrite = 'auto', $preserveDir = FALSE,
-			$masterpw = NULL, $verbose = FALSE){
+	public function getFile($url, $dir, $l, $overwrite = 'auto', $preserveDir = false,
+			$masterpw = null, $verbose = false){
 
 		 ini_set('user_agent', self::$USER_AGENT);
 
@@ -169,9 +169,10 @@ class OC_importerHTTP {
 				}
 			}
 
-			$user_info = OC_importer::getUserProviderInfo(static::$PROVIDER_NAME, $masterpw);
-
 			$purl = parse_url($url);
+
+			$user_info = OC_importer::getUserProviderInfo(static::$PROVIDER_NAME, $purl['host'], $masterpw);
+
 			
 			$cookieHeader = "";
 			// Reuse possible auth cookies if we're getting from ourself
