@@ -82,6 +82,10 @@ OCP\Util::addStyle('importer', 'personalsettings');
 		autocomplete="off" name="importer_pr_un_<?php p($id); ?>"
 		id="importer_pr_un_<?php p($id); ?>" value="<?php p(!is_null($p['us_id'])?$p['us_username']:''); ?>"
 		placeholder="<?php p($l->t('Username'));?>" />
+		
+		<input class="old_username hidden" type="text"
+		autocomplete="off" name="importer_pr_on_<?php p($id); ?>"
+		id="importer_pr_on_<?php p($id); ?>" value="<?php p(!is_null($p['us_id'])?$p['us_username']:''); ?>" />
 
 		<input class="password numeric-password"
 		autocomplete="off" type="text" name="importer_pr_pw_<?php p($id); ?>"

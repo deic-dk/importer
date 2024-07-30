@@ -177,8 +177,13 @@ class OC_importerHTTP {
 			$cookieHeader = "";
 			// Reuse possible auth cookies if we're getting from ourself
 			OC_Log::write('importer','Looking for cookie: '.$purl['host'].'-->'.self::isInMyDomain($purl['host']).':'.serialize($_COOKIE), OC_Log::WARN);
-			if(self::isInMyDomain($purl['host']) && !empty($_COOKIE['public_link_authenticated'])){
-				$cookieHeader = 'Cookie: public_link_authenticated='.$_COOKIE['public_link_authenticated'];
+			if(self::isInMyDomain($purl['host'])){
+				$instanceId = \OC_Config::getValue('instanceid', null);
+				$sessionCookie = $_COOKIE[$instanceId];
+				$cookieHeader = "Cookie: ".$instanceId."=".$sessionCookie;
+				if(!empty($_COOKIE['public_link_authenticated'])){
+					$cookieHeader .= "\nCookie: public_link_authenticated=".$_COOKIE['public_link_authenticated'];
+				}
 				OC_Log::write('importer','Using cookie: '.$cookieHeader, OC_Log::WARN);
 			}
 
@@ -195,7 +200,9 @@ class OC_importerHTTP {
 				$check = $this->checkRemoteFile($url, $user_info, false, $cookieHeader);
 				$size = $check['size'];
 				if($size==0){
-					throw new Exception($l->t('File size is 0. ').$url);
+					//throw new Exception($l->t('File size is 0. ').$url);
+					// /storage does not send any content-length header...
+					OC_Log::write('importer','File size is 0: '.$url, OC_Log::WARN);
 				}
 			}
 
@@ -209,7 +216,6 @@ class OC_importerHTTP {
 				if(!$overwrite){
 					$filename = md5(rand()) . '_' . $filename;
 				}
-
 				elseif($overwrite==='auto' && $fs->filesize($dl_dir . "/" . $filename)===$size){
 					OC_Log::write('importer','Already downloaded and ok. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir, OC_Log::WARN);
 					$skip_file = TRUE;
@@ -218,9 +224,7 @@ class OC_importerHTTP {
 				  OC_Log::write('importer','Redownloading. URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename. ", PRESERVEDIR: ".$preserveDir." Size: ".$fs->filesize($dl_dir . "/" . $filename)."!=".$size, OC_Log::WARN);
 				}
 			}
-
 			$purl = parse_url($url);
-
 			OC_Log::write('importer','URL: '.$url. ", DIR: ".$dl_dir. ", PATH: ".$dl_dir. "/" . $filename.
 					", PRESERVEDIR: ".$preserveDir.", SIZE: ".$size.", COOKIE: ".$cookieHeader, OC_Log::WARN);
 			
@@ -438,7 +442,7 @@ class OC_importerHTTP {
 		if($data===false){
 			return [];
 		}
-		$contentLength = 0;
+		$contentLength = -1;
 		$location = "";
 		// Grab the last Content-Length + Location header
 		foreach(preg_split("/((\r?\n)|(\r\n?))/", $data) as $line){

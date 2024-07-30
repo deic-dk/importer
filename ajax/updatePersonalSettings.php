@@ -21,11 +21,11 @@ if(isset($_POST['importer']) && $_POST['importer'] == 1){
 					$enc = trim($_POST['importer_pr_enc_' . $pr_id_host]);
 					$real_pr_id = trim($_POST['importer_pr_id_' . $pr_id_host]);
 					$real_hostname = trim($_POST['importer_pr_hn_' . $pr_id_host]);
-					$real_username = trim($_POST['importer_pr_un_' . $pr_id_host]);
-					OC_Log::write('importer',"Host/user ".$hostname.":".$real_hostname."-->".$value.":".$real_username, OC_Log::WARN);
-					if($enc=="0" && $pw!="" || $value!=$real_username || $hostname!=$real_hostname){
+					$old_username = trim($_POST['importer_pr_on_' . $pr_id_host]);
+					OC_Log::write('importer',"Host/user ".$hostname.":".$real_hostname."-->".$value.":".$old_username, OC_Log::WARN);
+					if($enc=="0" && $pw!="" || $value!=$old_username || $hostname!=$real_hostname){
 						OC_Log::write('importer',"Updating user info ".$pr_id_host.": ".$pw.", ".$enc,OC_Log::WARN);
-						if(OC_importer::updateUserInfo($real_pr_id, $real_hostname, $real_username, $pw, $enc)===false){
+						if(OC_importer::updateUserInfo($real_pr_id, $real_hostname, $value, $pw, $enc)===false){
 							$errors[$pr_id] = "ERROR: password NOT updated for ".$value.". " . mysql_error();
 						}
 					}

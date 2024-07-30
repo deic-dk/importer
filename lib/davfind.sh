@@ -3,7 +3,7 @@
 # Copyright, 2013, Frederik Orellana
 #
 # Usage: davfind.sh http://<hostname>:<port>/<upload path>\n".
-# Findsa all files recursively to the WebDAV folder passed in the url.
+# Finds all files recursively in the WebDAV folder passed in the url.
 #
 # Dependencies: curl, xmllint
 #

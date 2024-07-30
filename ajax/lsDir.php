@@ -35,7 +35,8 @@ $user_info = NULL;
 
 $k = array();
 
-$providers = OC_importer::getUserProvidersList(1, 1);
+#$providers = OC_importer::getUserProvidersList(1, 1);
+$providers = OC_importer::getProvidersList(1);
 
 if(empty($provider)){
   foreach($providers as $p){
@@ -45,8 +46,6 @@ if(empty($provider)){
     }
   }
 }
-
-OC_Log::write('importer',"Provider: ".$provider.". Hostname: ".$hostname, OC_Log::WARN);
 
 $m = "";
 if(!empty($provider)){
@@ -63,6 +62,8 @@ if(!empty($provider)){
 		$k['error'] = "Protocol not supported.";
 	}
 }
+
+OC_Log::write('importer',"Provider: ".$provider.":".$myprovider.". Hostname: ".$hostname, OC_Log::WARN);
 
 $url = parse_url($folderurl);
 $port = 0;

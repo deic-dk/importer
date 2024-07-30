@@ -131,9 +131,9 @@ $(document).ready(function(){
 		});
 
 	$('.importer-delete').bind('click', function(){
-		$('#importer_pr_un_' + $(this).attr('rel')).val('');
-		$('#importer_pr_pw_' + $(this).attr('rel')).val('');
-		$('input[name="importer_pr_pw_' + $(this).attr('rel')+'-clone"]').val('');
+		$('#importer_pr_un_' + $(this).attr('rel').replaceAll('.', '\\.')).val('');
+		$('#importer_pr_pw_' + $(this).attr('rel').replaceAll('.', '\\.')).val('');
+		$('input[name="importer_pr_pw_' + $(this).attr('rel').replaceAll('.', '\\.')+'-clone"]').val('');
 		 $(this).parent().find(".personal-show + label").css('background-image', 'url("../../../core/img/actions/toggle.png")');
 	});
 	$('.importer-delete').tipsy({gravity:'s',fade:true});
