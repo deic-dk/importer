@@ -45,7 +45,7 @@ div.dlbtn button.ui-button-text-only .ui-button-text {
 	padding: 4px;
 }
 
-#importer{min-width:920px;margin:0.8em 0 0 0.3em;}
+#importer{min-width:920px;min-height: 320px;margin:0.8em 0 0 0.3em;}
 #importer div.clear{clear:both;}
 #importer div.personalblock.bottomblock{margin-bottom:1em;}
 #importer div.personalblock{margin:1em 0.0em 0 0;padding:0.5em 1em;position:relative;background: none repeat scroll 0 0 #F8F8F8;border-radius:2px;color:#555555;border:1px solid #DDDDDD;top: 0px !important;left: 0px !important;}
