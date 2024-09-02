@@ -120,7 +120,9 @@ class OC_importer {
 			$result = $query->execute(Array(OCP\User::getUser(), $pr_name))->fetchRow();
 		}
 		else{
-			$query = OCP\DB::prepare("SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?");
+			$queryStr = "SELECT us_username, us_password FROM *PREFIX*importer_users_settings WHERE oc_uid = ? AND pr_fk = ? AND us_hostname = ?";
+			$query = OCP\DB::prepare($queryStr);
+			OC_Log::write('importer', "Running query: ".$queryStr." --> ".$pr_name." : ".$us_hostname, OC_Log::WARN);
 			$result = $query->execute(Array(OCP\User::getUser(), $pr_name, $us_hostname))->fetchRow();
 		}
 		if($result){

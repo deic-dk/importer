@@ -35,8 +35,10 @@ function davpull(){
 
 	local base=`echo $1 | sed -r 's|^(https*://*[^/]*)(/.*)$|\1|'`
 	local path=`echo $1 | sed -r 's|^(https*://*[^/]*)(/.*)$|\2|'`
+	
+	#echo curl --insecure -k -L --request PROPFIND --header \"Depth: 1\" $user_pass \"$1\" 2\>/dev/null \| xmllint --format - 2\>/dev/null \| grep href \| sed -r \'s\|\^ *\|\|\' \| sed -r 's|<d:href>(.*)</d:href>|\1|i' \| sed -r \"s\|^/\*$path/\*\|\|\" \| grep -v \'^\./\$\' \| grep -v \'^\$\'
 
-	curl -k -L --request PROPFIND --header "Depth: 1" "$user_pass" "$1" 2>/dev/null | xmllint --format - 2>/dev/null | grep href | sed -r 's|^ *||' | sed -r 's|<d:href>(.*)</d:href>|\1|' | sed -r "s|^/*$path/*||" | grep -v '^\./$' | grep -v '^$' |
+	curl --insecure -k -L --request PROPFIND --header "Depth: 1" $user_pass "$1" 2>/dev/null | xmllint --format - 2>/dev/null | grep href | sed -r 's|^ *||' | sed -r 's|<d:href>(.*)</d:href>|\1|i' | sed -r "s|^/*$path/*||" | grep -v '^\./$' | grep -v '^$' |
 
 	while read name; do
 		if [[ $name =~ .*/$ ]]; then

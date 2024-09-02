@@ -63,7 +63,8 @@ if(!empty($provider)){
 	}
 }
 
-OC_Log::write('importer',"Provider: ".$provider.":".$myprovider.". Hostname: ".$hostname, OC_Log::WARN);
+OC_Log::write('importer',"Provider: ".$provider.":".$myprovider.". Hostname: ".$hostname.
+		". Info: ".serialize($user_info), OC_Log::WARN);
 
 $url = parse_url($folderurl);
 $port = 0;

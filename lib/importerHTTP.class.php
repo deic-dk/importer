@@ -91,17 +91,18 @@ class OC_importerHTTP {
 		}
 
 		$out = array();
-		$tmpdir = OC_importer::mktmpdir();
-		# First check if we can crawl using index.html files
-		$cmd = self::$WGET." --no-check-certificate ".$user_str1." ".$password_str1." -P $tmpdir -r -l 5 -nH --cut-dirs=5 --no-parent --spider --reject='index.html\*' -e robots=off --server-response '".$folderurl."' 2>&1 | grep -r '^--' | grep -rv '/?' | grep -v '/$' | sed 's|.* http://|http://|' | sed 's|.* https://|https://|' | grep  '^http'";
+		# First try if webdav is supported
+		$cmd = OC_App::getAppPath('importer')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
 		OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
 		exec($cmd, $out, $ret);
-		shell_exec("rmdir ".$tmpdir);
-		# Now try if webdav is supported
+
+		# Next check if we can crawl using index.html files
 		if(empty($out)){
-			$cmd = OC_App::getAppPath('importer')."/lib/davfind.sh ".$user_str." ".$password_str." '".$folderurl."'";
+			$tmpdir = OC_importer::mktmpdir();
+			$cmd = self::$WGET." --no-check-certificate ".$user_str1." ".$password_str1." -P $tmpdir -r -l 5 -nH --cut-dirs=5 --no-parent --spider --reject='index.html\*' -e robots=off --server-response '".$folderurl."' 2>&1 | grep -r '^--' | grep -rv '/?' | grep -v '/$' | sed 's|.* http://|http://|' | sed 's|.* https://|https://|' | grep  '^http'";
 			OC_Log::write('importer',"Executing; ".$cmd, OC_Log::WARN);
 			exec($cmd, $out, $ret);
+			shell_exec("rmdir ".$tmpdir);
 		}
 		return $out;
 	}
@@ -247,8 +248,8 @@ class OC_importerHTTP {
 					'max_redirects' => 10,
 				 ),
 				 'ssl'=>array(
-				 	'verify_peer' => true,
-				 	'verify_peer_name' => true,
+				 	'verify_peer' => false,
+				 	'verify_peer_name' => false,
 				 	'cafile' => $this->cafile
 				 )
 				);
@@ -264,15 +265,15 @@ class OC_importerHTTP {
 														"If-Modified-Since: Sun, 10 May 1900 02:01:00 GMT\r\n")
 					),
 					'ssl'=>array(
-					'verify_peer' => true,
-					'verify_peer_name' => true,
+					'verify_peer' => false,
+					'verify_peer_name' => false,
 					'cafile' => $this->cafile
 					)
 				);
 			}
 			$context = stream_context_create($opts);
 
-			$randomStr = md5(uniqid(rand(), true));
+			//$randomStr = md5(uniqid(rand(), true));
 			// I guess the below was to prevent getting cached files
 			//- but it also prevents getting files from https://sciencedata.dk/public/...
 			//$url = $url.(strpos($url, '?')!==false?'&':'?').$randomStr;
