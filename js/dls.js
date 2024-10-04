@@ -401,7 +401,8 @@ function doSaveList(file_name, urls){
 }
 
 function readListFile(){
-  var selected_file = $('#chosen_file').text();
+  //var selected_file = $('#chosen_file').text();
+  var selected_file = $(".chosen").text() 
   if(selected_file==""){
     return;
   }
@@ -649,10 +650,8 @@ $(document).ready(function(){
 		saveList();
 	});
 
-
-	var mydialog0;
 	var buttons = {};
-	buttons[t("importer", "Choose")] = function() {
+	buttons[t("importer", "Choose")] = function(ev) {
  		readListFile();
  		mydialog0.dialog("close");
  	};
