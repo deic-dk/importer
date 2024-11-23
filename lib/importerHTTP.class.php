@@ -178,7 +178,7 @@ class OC_importerHTTP {
 			$cookieHeader = "";
 			// Reuse possible auth cookies if we're getting from ourself
 			OC_Log::write('importer','Looking for cookie: '.$purl['host'].'-->'.self::isInMyDomain($purl['host']).':'.serialize($_COOKIE), OC_Log::WARN);
-			if(self::isInMyDomain($purl['host']) && !preg_match('|^'.OC::$WEBROOT.'/public/'.'*|', $purl['path'])){
+			if(self::isInMyDomain($purl['host']) && !preg_match('|^'.OC::$WEBROOT.'/public/'.'*|', $purl['path']) && !preg_match('|^'.OC::$WEBROOT.'/shared/'.'*|', $purl['path'])){
 				$instanceId = \OC_Config::getValue('instanceid', null);
 				$sessionCookie = $_COOKIE[$instanceId];
 				$cookieHeader = "Cookie: ".$instanceId."=".$sessionCookie;
