@@ -178,7 +178,7 @@ class OC_importerHTTP {
 			$cookieHeader = "";
 			// Reuse possible auth cookies if we're getting from ourself
 			OC_Log::write('importer','Looking for cookie: '.$purl['host'].'-->'.self::isInMyDomain($purl['host']).':'.serialize($_COOKIE), OC_Log::WARN);
-			if(self::isInMyDomain($purl['host'])){
+			if(self::isInMyDomain($purl['host']) && !preg_match('|^'.OC::$WEBROOT.'/public/'.'*|', $purl['path'])){
 				$instanceId = \OC_Config::getValue('instanceid', null);
 				$sessionCookie = $_COOKIE[$instanceId];
 				$cookieHeader = "Cookie: ".$instanceId."=".$sessionCookie;
@@ -277,7 +277,7 @@ class OC_importerHTTP {
 			// I guess the below was to prevent getting cached files
 			//- but it also prevents getting files from https://sciencedata.dk/public/...
 			//$url = $url.(strpos($url, '?')!==false?'&':'?').$randomStr;
-			OC_Log::write('importer', 'Opening '.$url, OC_Log::INFO);
+			OC_Log::write('importer', 'Opening '.$url, OC_Log::WARN);
 			if(!($fp = fopen($url, 'rb', false, $context))){
 				throw new Exception('Failed opening URL' . stream_get_meta_data($fp));
 			}
