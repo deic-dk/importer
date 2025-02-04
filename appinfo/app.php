@@ -32,14 +32,14 @@ if(!OC_importer::isInitialized()){
 }
 
 OCP\App::register(Array(
-	'order' => 30,
+	'order' => 29,
 	'id' => 'importer',
 	'name' => 'importer'
 ));
 
 OCP\App::addNavigationEntry(Array(
 	'id' => 'importer_index',
-	'order' => 30,
+	'order' => 29,
 	'href' => OCP\Util::linkTo('importer', 'importer.php'),
 	'icon' => OCP\Util::imagePath('importer', 'importer.svg'),
 	'name' => $l->t('Import')
