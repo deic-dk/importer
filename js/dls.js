@@ -253,12 +253,17 @@ function checkMasterPw(url, provider){
 				data:{url:url, provider:provider},
 				async:false,
 				success:function(s){
-					decrypting = false;
-					if(typeof s.us_password === 'undefined' || s.us_password.trim()==''){
+					if(s==null){
 						importer_pw_ok = true;
 					}
-					if(s.error){
-						alert(s.error);
+					else{
+						decrypting = false;
+						if(typeof s.us_password === 'undefined' || s.us_password.trim()==''){
+							importer_pw_ok = true;
+						}
+						if(s.error){
+							alert(s.error);
+						}
 					}
 				},
 				error:function(){

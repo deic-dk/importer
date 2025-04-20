@@ -15,12 +15,12 @@ $user_info = NULL;
 $providers = OC_importer::getUserProvidersList(1, 1);
 
 if(empty($provider)){
-  foreach($providers as $p){
-    if(preg_match('/^'.$p['pr_name'].'s*:\/\//i', $folderurl)){
-      $provider = 'pr_'.$p['pr_id'];
-      break;
-    }
-  }
+	foreach($providers as $p){
+		if(preg_match('/^'.$p['pr_name'].'s*:\/\//i', $folderurl)){
+			$provider = 'pr_'.$p['pr_id'];
+			break;
+		}
+	}
 }
 else{
 	foreach($providers as $p){
@@ -32,12 +32,14 @@ else{
 }
 
 $m = "";
-if(!empty($provider) && preg_match('/^pr_([^_^&]+)$/', $provider, $m)){
-	$user_info = OC_importer::getUserProviderInfoRaw($m[1], $hostname);
-}
-else{
-	OC_Log::write('importer', "Bad format of provider ID: ".$provider, OC_Log::ERROR);
-	$user_info['error'] = "Protocol not supported: ".$myprovider;
+if(!empty($provider)){
+	if(preg_match('/^pr_([^_^&]+)$/', $provider, $m)){
+		$user_info = OC_importer::getUserProviderInfoRaw($m[1], $hostname);
+	}
+	else{
+		OC_Log::write('importer', "Bad format of provider ID: ".$provider.":".serialize($providers), OC_Log::ERROR);
+		$user_info['error'] = "Protocol not supported: ".$myprovider.":".$provider;
+	}
 }
 
 OC_Log::write('importer',"Returning: ".serialize($user_info), OC_Log::WARN);
