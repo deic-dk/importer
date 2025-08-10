@@ -104,7 +104,7 @@ function submit_importer_form(){
 						$("#importer_msg").html(s);
 					}
 					else{
-						$("#importer_msg").html("Settings saved");
+						OC.msg.finishedSaving('#importer_msg', {status: 'success', data: {message:  	t('importer', 'Settings saved')}});
 					}
 				},
 				error:function(s){
